@@ -1,0 +1,191 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!--
+    Copyright (C) 2016 Arthur Gregorio, AG.Software
+
+    This program is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with this program.  If not, see <http://www.gnu.org/licenses/>.
+-->
+
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:o="http://omnifaces.org/ui"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:jsf="http://xmlns.jcp.org/jsf"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:f="http://xmlns.jcp.org/jsf/core"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+      xmlns:c="http://xmlns.jcp.org/jsf/composite">
+
+<c:interface>
+    <c:attribute required="true"
+                 name="printVersion"
+                 type="java.lang.Boolean"/>
+
+    <c:attribute required="true"
+                 name="invoice"
+                 type="br.com.webbudget.domain.entities.financial.CreditCardInvoice"/>
+
+    <c:attribute name="backAction"
+                 method-signature="java.lang.String  actionListener()"/>
+    <c:attribute name="printInvoiceAction"
+                 method-signature="java.lang.String  actionListener()"/>
+</c:interface>
+
+<c:implementation>
+    <section class="invoice" style="margin: 0">
+        <div class="row">
+            <div class="col-xs-12">
+                <h2 class="page-header">
+                    <i class="fa fa-credit-card"/> #{cc.attrs.invoice.card.readableName}
+                    <small class="pull-right">
+                        <i class="fa fa-clock"/>
+                        <p:spacer width="3"/>
+                        <h:outputText converter="localDateTimeConverter"
+                                      value="#{cc.attrs.invoice.createdOn}"/>
+                    </small>
+                </h2>
+            </div>
+        </div>
+        <div class="row invoice-info">
+            <div class="col-sm-4 invoice-col">
+                <strong>#{messages['credit-card-invoice.invoice.card']}</strong>
+                <address>
+                    #{messages['credit-card-invoice.invoice.card-flag']}: #{cc.attrs.invoice.card.flag}
+                    <br/>
+                    #{messages['credit-card-invoice.invoice.card-owner']}: #{cc.attrs.invoice.card.owner}
+                    <br/>
+                    #{messages['credit-card-invoice.invoice.card-number']}: #{cc.attrs.invoice.card.securedNumber}
+                </address>
+            </div>
+            <div class="col-sm-4 invoice-col">
+                <strong>#{messages['credit-card-invoice.invoice.financial-period']}</strong>
+                <address>
+                    #{messages['credit-card-invoice.invoice.financial-period-identification']}:
+                    #{cc.attrs.invoice.financialPeriod.identification}
+                    <br/>
+                    #{messages['credit-card-invoice.invoice.credit-card-goal']}:
+                    <h:outputText value="#{cc.attrs.invoice.financialPeriod.creditCardGoal}">
+                        <f:convertNumber pattern="¤#,##0.00" currencySymbol="R$ "/>
+                    </h:outputText>
+                    <br/>
+                    <o:outputFormat value="#{messages['credit-card-invoice.invoice.financial-period-dates']}">
+                        <f:param value="#{cc.attrs.invoice.periodStart}"/>
+                        <f:param value="#{cc.attrs.invoice.periodEnd}"/>
+                    </o:outputFormat>
+                </address>
+            </div>
+            <div class="col-sm-4 invoice-col">
+                <b>#{messages['credit-card-invoice.invoice.state']}: </b>
+                <h:outputText value="#{enums[cc.attrs.invoice.invoiceState]}"/>
+                <br/>
+                <b>#{messages['credit-card-invoice.invoice.due-date']}: </b>
+                <h:outputText converter="localDateConverter"
+                              value="#{cc.attrs.invoice.dueDate}"/>
+            </div>
+        </div>
+        <div class="row">
+            <div jsf:id="movementsList"
+                 class="col-xs-12 table-responsive">
+                <h:form>
+                    <table class="table table-striped">
+                        <thead>
+                        <tr>
+                            <th jsf:rendered="#{not cc.attrs.printVersion}">
+                                <b>#{messages['credit-card-invoice.invoice.checked']}</b>
+                            </th>
+                            <th><b>#{messages['credit-card-invoice.invoice.movement-identification']}</b></th>
+                            <th><b>#{messages['credit-card-invoice.invoice.payment-date']}</b></th>
+                            <th><b>#{messages['credit-card-invoice.invoice.value']}</b></th>
+                            <th jsf:rendered="#{not cc.attrs.printVersion}"><b>#{menu['details']}</b></th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        <ui:repeat var="movement"
+                                   value="#{cc.attrs.invoice.periodMovements}">
+                            <tr class="#{movement.checked ? 'checked-line' : ''}">
+                                <td style="width:8%"
+                                    jsf:rendered="#{not cc.attrs.printVersion}">
+                                    <p:selectBooleanCheckbox value="#{movement.checked}">
+                                        <p:ajax update="#{cc.id}:movementsList"/>
+                                    </p:selectBooleanCheckbox>
+                                </td>
+                                <td>
+                                    <h:outputText id="txIdentification"
+                                                  value="#{movement.identification}"/>
+                                    <p:tooltip position="left"
+                                               for="txIdentification"
+                                               value="#{movement.description}"
+                                               rendered="#{not empty movement.description}"/>
+                                </td>
+                                <td style="width: 15%">
+                                    <h:outputText value="#{movement.paymentDate}">
+                                        <f:converter converterId="localDateConverter"/>
+                                    </h:outputText>
+                                </td>
+                                <td style="width: 15%">
+                                    <h:outputText value="#{movement.value}">
+                                        <f:convertNumber pattern="¤#,##0.00" currencySymbol="R$ "/>
+                                    </h:outputText>
+                                </td>
+                                <td style="width: 8%"
+                                    jsf:rendered="#{not cc.attrs.printVersion}">
+                                    <p:link title="#{menu['details']}"
+                                            outcome="/secured/financial/movement/period/detailPeriodMovement.xhtml">
+                                        <i class="fa fa-search"/>
+                                        <f:param name="id" value="#{movement.id}"/>
+                                        <f:param name="viewState" value="DETAILING"/>
+                                    </p:link>
+                                </td>
+                            </tr>
+                        </ui:repeat>
+                        </tbody>
+                    </table>
+                </h:form>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-xs-6">
+            </div>
+            <div class="col-xs-6">
+                <div class="table-responsive">
+                    <table class="table">
+                        <tr>
+                            <th style="width:50%"><b>#{messages['credit-card-invoice.invoice.total']}</b></th>
+                            <td>
+                                <h:outputText value="#{cc.attrs.invoice.totalValue}">
+                                    <f:convertNumber pattern="¤#,##0.00" currencySymbol="R$ "/>
+                                </h:outputText>
+                            </td>
+                        </tr>
+                    </table>
+                </div>
+            </div>
+        </div>
+        <div class="row no-print"
+             jsf:rendered="#{not cc.attrs.printVersion}">
+            <div class="col-xs-12 text-right">
+                <p:commandButton immediate="true"
+                                 value="#{menu['print']}"
+                                 styleClass="btn btn-flat btn-default"
+                                 action="#{cc.attrs.printInvoiceAction}"
+                                 rendered="#{not cc.attrs.printVersion}"/>
+                <p:spacer width="5"/>
+                <p:commandButton immediate="true"
+                                 value="#{menu['back']}"
+                                 action="#{cc.attrs.backAction}"
+                                 styleClass="btn btn-flat btn-primary"/>
+            </div>
+        </div>
+    </section>
+</c:implementation>
+</html>

@@ -1,0 +1,148 @@
+<!--
+  Copyright (C) 2014 Arthur Gregorio, AG.Software
+ 
+  This program is free software: you can redistribute it and/or modify
+  it under the terms of the GNU General Public License as published by
+  the Free Software Foundation, either version 3 of the License, or
+  (at your option) any later version.
+ 
+  This program is distributed in the hope that it will be useful,
+  but WITHOUT ANY WARRANTY; without even the implied warranty of
+  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  GNU General Public License for more details.
+ 
+  You should have received a copy of the GNU General Public License
+  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+-->
+
+<ui:composition xmlns="http://www.w3.org/1999/xhtml"
+                xmlns:o="http://omnifaces.org/ui"
+                xmlns:p="http://primefaces.org/ui"
+                xmlns:jsf="http://xmlns.jcp.org/jsf"
+                xmlns:h="http://xmlns.jcp.org/jsf/html"
+                xmlns:f="http://xmlns.jcp.org/jsf/core"
+                xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+                xmlns:wb="http://xmlns.jcp.org/jsf/composite/webbudget/ui"
+                template="/template/mainTemplate.xhtml">
+
+    <f:metadata>
+        <f:viewAction action="#{movementClassBean.initialize(param.id, param.viewState)}"/>
+    </f:metadata>
+
+    <ui:define name="pageTitle">
+        #{messages['movement-class.page-title']}
+    </ui:define>
+
+    <ui:define name="pageDescription">
+        <h:outputText rendered="#{movementClassBean.viewState.adding}"
+                      value="#{messages['movement-class.page-description-adding']}"/>
+        <o:outputFormat id="pageDescription"
+                        rendered="#{movementClassBean.viewState.editing}"
+                        value="#{messages['movement-class.page-description-editing']}">
+            <f:param value="#{movementClassBean.value.name}"/>
+        </o:outputFormat>
+    </ui:define>
+
+    <ui:define name="breadcrumb">
+        <li><a href="#">#{breadcrumb['registration']}</a></li>
+        <li><a href="listMovementClasses.xhtml">#{breadcrumb['registration.movement-classes']}</a></li>
+        <li jsf:rendered="#{movementClassBean.viewState.adding}"
+            class="active"><a href="#">#{breadcrumb['adding']}</a></li>
+        <li jsf:rendered="#{movementClassBean.viewState.editing}"
+            class="active"><a href="#">#{breadcrumb['editing']}</a></li>
+    </ui:define>
+
+    <ui:define name="content">
+        <h:form id="movementClassForm" prependId="false">
+            <wb:blocker target="movementClassForm"/>
+            <div class="row">
+                <div class="col-sm-12">
+                    <p:messages id="messages" closable="true"/>
+                </div>
+            </div>
+            <div class="box box-#{profileBean.currentThemeColorName}">
+                <div class="box-header with-border">
+                    <h3 class="box-title">
+                        <p:selectBooleanCheckbox id="inBlocked"
+                                                 itemLabel="#{messages['form.active']}"
+                                                 value="#{movementClassBean.value.active}"/>
+                    </h3>
+                </div>
+                <div class="box-body row">
+                    <div class="form-group col-md-3">
+                        <p:outputLabel for="inName"
+                                       value="#{messages['movement-class.form.name']}: "/>
+                        <p:inputText id="inName"
+                                     styleClass="form-control"
+                                     value="#{movementClassBean.value.name}"
+                                     disabled="#{movementClassBean.viewState.editing}"/>
+                    </div>
+                    <div class="form-group col-md-3">
+                        <p:outputLabel for="inMovementClassType"
+                                       value="#{messages['movement-class.form.movement-class-type']}: "/>
+                        <p:selectOneMenu id="inMovementClassType"
+                                         converter="omnifaces.GenericEnumConverter"
+                                         value="#{movementClassBean.value.movementClassType}"
+                                         disabled="#{movementClassBean.viewState.editing}">
+                            <f:selectItem itemValue="#{null}"
+                                          noSelectionOption="true"
+                                          itemLabel="#{menu['select-one']}"/>
+                            <f:selectItems var="movementClassType"
+                                           itemValue="#{movementClassType}"
+                                           itemLabel="#{enums[movementClassType]}"
+                                           value="#{movementClassBean.movementClassTypes}"/>
+                        </p:selectOneMenu>
+                    </div>
+                    <div class="form-group col-md-3">
+                        <p:outputLabel for="inCostCenter"
+                                       value="#{messages['movement-class.form.cost-center']}: "/>
+                        <p:selectOneMenu id="inCostCenter"
+                                         converter="omnifaces.SelectItemsConverter"
+                                         value="#{movementClassBean.value.costCenter}">
+                            <f:selectItem itemValue="#{null}"
+                                          noSelectionOption="true"
+                                          itemLabel="#{menu['select-one']}"/>
+                            <f:selectItems var="costCenter"
+                                           itemValue="#{costCenter}"
+                                           itemLabel="#{costCenter.name}"
+                                           value="#{movementClassBean.costCenters}"/>
+                        </p:selectOneMenu>
+                    </div>
+                    <div class="form-group col-md-3">
+                        <p:outputLabel for="inBudget"
+                                       value="#{messages['movement-class.form.budget']}: "/>
+                        <p:inputNumber id="inBudget"
+                                       symbol="R$ "
+                                       decimalPlaces="2"
+                                       decimalSeparator=","
+                                       thousandSeparator="."
+                                       value="#{movementClassBean.value.budget}">
+                            <f:converter converterId="javax.faces.BigDecimal"/>
+                        </p:inputNumber>
+                    </div>
+                </div>
+                <div class="box-footer text-right">
+                    <p:commandButton value="#{menu['save']}"
+                                     update="movementClassForm"
+                                     onstart="PF('blocker').show()"
+                                     oncomplete="PF('blocker').hide()"
+                                     styleClass="btn btn-flat btn-success"
+                                     action="#{movementClassBean.doSave()}"
+                                     rendered="#{movementClassBean.viewState.adding}"/>
+                    <p:commandButton value="#{menu['update']}"
+                                     onstart="PF('blocker').show()"
+                                     oncomplete="PF('blocker').hide()"
+                                     styleClass="btn btn-flat btn-success"
+                                     action="#{movementClassBean.doUpdate()}"
+                                     update="movementClassForm pageDescription"
+                                     rendered="#{movementClassBean.viewState.editing}"/>
+                    <p:spacer width="5"/>
+                    <p:commandButton immediate="true"
+                                     value="#{menu['back']}"
+                                     styleClass="btn btn-flat btn-primary"
+                                     action="#{movementClassBean.changeToListing()}"/>
+                </div>
+            </div>
+        </h:form>
+    </ui:define>
+</ui:composition>

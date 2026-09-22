@@ -1,0 +1,174 @@
+<!--
+  Copyright (C) 2015 Arthur Gregorio, AG.Software
+ 
+  This program is free software: you can redistribute it and/or modify
+  it under the terms of the GNU General Public License as published by
+  the Free Software Foundation, either version 3 of the License, or
+  (at your option) any later version.
+ 
+  This program is distributed in the hope that it will be useful,
+  but WITHOUT ANY WARRANTY; without even the implied warranty of
+  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  GNU General Public License for more details.
+ 
+  You should have received a copy of the GNU General Public License
+  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+-->
+
+<ui:composition xmlns="http://www.w3.org/1999/xhtml"
+                xmlns:p="http://primefaces.org/ui"
+                xmlns:jsf="http://xmlns.jcp.org/jsf"
+                xmlns:h="http://xmlns.jcp.org/jsf/html"
+                xmlns:f="http://xmlns.jcp.org/jsf/core"
+                xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+                xmlns:wb="http://xmlns.jcp.org/jsf/composite/webbudget/ui"
+                template="/template/mainTemplate.xhtml">
+
+    <f:metadata>
+        <f:viewAction action="#{movementClassBean.initialize()}"/>
+    </f:metadata>
+
+    <ui:define name="pageTitle">
+        #{messages['movement-class.page-title']}
+    </ui:define>
+
+    <ui:define name="pageDescription">
+        #{messages['movement-class.page-description']}
+    </ui:define>
+
+    <ui:define name="breadcrumb">
+        <li><a href="#">#{breadcrumb['registration']}</a></li>
+        <li class="active"><a href="listMovementClasses.xhtml">#{breadcrumb['registration.movement-classes']}</a></li>
+    </ui:define>
+
+    <ui:define name="content">
+        <div class="row">
+            <div class="col-sm-12">
+                <p:messages id="messages" closable="true"/>
+            </div>
+        </div>
+        <div class="box box-#{profileBean.currentThemeColorName}">
+            <div class="box-header with-border">
+                <h:form id="controlsForm">
+                    <p:defaultCommand target="btSearch"/>
+                    <div class="row">
+                        <div class="col-md-3">
+                            <p:selectOneMenu converter="omnifaces.GenericEnumConverter"
+                                             value="#{movementClassBean.filter.entityStatus}">
+                                <f:selectItems var="entityStatus"
+                                               itemValue="#{entityStatus}"
+                                               itemLabel="#{enums[entityStatus]}"
+                                               value="#{movementClassBean.filter.entityStatusValues}"/>
+                            </p:selectOneMenu>
+                        </div>
+                        <div class="col-md-7">
+                            <div class="input-group">
+                                <p:inputText styleClass="form-control"
+                                             value="#{movementClassBean.filter.value}"
+                                             placeholder="#{messages['filter.movement-class']}"/>
+                                <div class="input-group-btn">
+                                    <p:commandButton id="btSearch"
+                                                     update="itemsList"
+                                                     value="#{menu['search']}"
+                                                     onstart="PF('blocker').show()"
+                                                     oncomplete="PF('blocker').hide()"
+                                                     styleClass="btn btn-flat btn-primary"/>
+                                    <p:spacer width="5"/>
+                                    <p:commandButton icon="fa fa-trash"
+                                                     onstart="PF('blocker').show()"
+                                                     title="#{menu['filter-clear']}"
+                                                     update="itemsList controlsForm"
+                                                     oncomplete="PF('blocker').hide()"
+                                                     styleClass="btn btn-flat btn-danger"
+                                                     actionListener="#{movementClassBean.clearFilters()}"/>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-2">
+                            <div class="box-tools pull-right">
+                                <p:commandButton immediate="true"
+                                                 value="#{menu['new']}"
+                                                 action="#{movementClassBean.changeToAdd()}"
+                                                 styleClass="btn btn-flat btn-primary"
+                                                 rendered="#{userSessionBean.isPermitted(permissions.MOVEMENT_CLASS_ADD)}"/>
+                            </div>
+                        </div>
+                    </div>
+                </h:form>
+            </div>
+            <div jsf:id="boxBody" class="box-body">
+                <h:form id="itemsList">
+                    <p:dataTable rows="25"
+                                 lazy="true"
+                                 rowHover="true"
+                                 paginator="true"
+                                 var="movementClass"
+                                 sortOrder="ascending"
+                                 selectionMode="single"
+                                 paginatorPosition="bottom"
+                                 rowKey="#{movementClass.id}"
+                                 paginatorAlwaysVisible="false"
+                                 selection="#{movementClassBean.value}"
+                                 value="#{movementClassBean.dataModel}"
+                                 emptyMessage="#{messages['list.empty']}">
+
+                        <p:ajax event="rowSelect"
+                                listener="#{movementClassBean.changeToDetail()}"
+                                disabled="#{not userSessionBean.isPermitted(permissions.MOVEMENT_CLASS_DETAIL)}"/>
+
+                        <p:column headerText="#{messages['movement-class.list.name']}">
+                            <span class="badge bg-red badge-row-fix"
+                                  jsf:rendered="#{not movementClass.active}">
+                                #{messages['list.inactive']}
+                            </span>
+                            <span class="badge bg-green badge-row-fix"
+                                  jsf:rendered="#{movementClass.active}">
+                                #{messages['list.active']}
+                            </span>
+                            <p:spacer width="5"/>
+                            <span class="badge bg-orange badge-row-fix"
+                                  jsf:rendered="#{movementClass.expense}">
+                                #{messages['movement-class.list.expenses']}
+                            </span>
+                            <span class="badge bg-aqua badge-row-fix"
+                                  jsf:rendered="#{movementClass.revenue}">
+                                #{messages['movement-class.list.revenues']}
+                            </span>
+                            <p:spacer width="5"/>
+                            #{movementClass.name}
+                        </p:column>
+                        <p:column width="20%"
+                                  styleClass="text-center"
+                                  headerText="#{messages['movement-class.list.cost-center']}">
+                            #{movementClass.costCenter.name}
+                        </p:column>
+                        <p:column width="15%"
+                                  styleClass="text-center"
+                                  headerText="#{messages['movement-class.list.budget']}">
+                            <h:outputText value="#{movementClass.budget}">
+                                <f:convertNumber pattern="¤#,##0.00" currencySymbol="R$ "/>
+                            </h:outputText>
+                        </p:column>
+                        <p:column width="15%"
+                                  styleClass="text-center"
+                                  headerText="#{messages['list.actions']}">
+                            <p:commandButton icon="fa fa-edit"
+                                             title="#{menu['edit']}"
+                                             styleClass="btn btn-flat btn-default"
+                                             action="#{movementClassBean.changeToEdit(movementClass.id)}"
+                                             rendered="#{userSessionBean.isPermitted(permissions.MOVEMENT_CLASS_UPDATE)}"/>
+                            <p:spacer width="5"
+                                      rendered="#{userSessionBean.isPermitted(permissions.MOVEMENT_CLASS_DELETE)}"/>
+                            <p:commandButton icon="fa fa-eraser"
+                                             title="#{menu['delete']}"
+                                             styleClass="btn btn-flat btn-danger"
+                                             action="#{movementClassBean.changeToDelete(movementClass.id)}"
+                                             rendered="#{userSessionBean.isPermitted(permissions.MOVEMENT_CLASS_DELETE)}"/>
+                        </p:column>
+                    </p:dataTable>
+                </h:form>
+            </div>
+        </div>
+        <wb:blocker target="boxBody"/>
+    </ui:define>
+</ui:composition>

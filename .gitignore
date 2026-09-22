@@ -1,0 +1,58 @@
+# IntelliJ config File
+*.iml
+
+# Compiled class file
+*.class
+
+# Log file
+*.log
+
+# BlueJ files
+*.ctxt
+
+# Mobile Tools for Java (J2ME)
+.mtj.tmp/
+
+# Package Files #
+*.jar
+*.war
+*.ear
+*.zip
+*.tar.gz
+*.rar
+
+# virtual machine crash logs, see http://www.java.com/en/download/help/error_hotspot.xml
+hs_err_pid*
+/target/
+
+# other resources
+/webBudget/target/
+nb-configuration.xml
+/target/
+.idea
+# JSF screenshot-tour output
+screenshots/
+
+
+
+# migration secrets (real env with tokens); migration.config.example.json is tracked
+migration/migration.config.json
+
+# tracker runtime caches (per-environment, NOT authoritative — dedupe is UUID-sourced from the
+# tracker). Tracking these let a stale cache sync across envs and wrongly skip recreated issues.
+migration/issues/state.json
+migration/issues/state.vikunja.json
+migration/issues/state.openproject.json
+
+# but DO track the curated Vaadin starter used by vaadin-scaffold
+!vaadin-starter.zip
+
+
+# python cache
+__pycache__/
+
+# Playwright MCP server cache (page snapshots + console logs from browser sessions)
+.playwright-mcp/
+
+# prevent the Vaadin scaffold's own .git from ever being staged
+migration/vaadin/.git

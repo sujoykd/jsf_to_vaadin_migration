@@ -1,0 +1,33 @@
+{
+  "_help": "Single config for the JSF->Vaadin migration. Copy to migration.config.json (gitignored), fill in the token(s). The scripts read this file directly via migration/scripts/_env.py — no sourcing. Any real environment variable overrides the matching key here. Values below are this project's discovered defaults; change them for another app.",
+
+  "_source": "running JSF app + its source dirs (BASE_URL: host.docker.internal inside the devcontainer). JAVA_ROOT feeds resolve_views.py / analyze_entity.py; I18N_DIR feeds resolve_i18n.py.",
+  "WEBAPP": "src/main/webapp",
+  "JAVA_ROOT": "src/main/java",
+  "I18N_DIR": "src/main/resources/i18n",
+  "BASE_URL": "https://host.docker.internal:8443",
+
+  "_login": "credentials the screenshot tour logs in with (left blank here; fill in your real migration.config.json — it is gitignored). If blank, the skill asks.",
+  "APP_USERNAME": "",
+  "APP_PASSWORD": "",
+
+  "_database": "shared Postgres so JSF and Vaadin can be compared",
+  "DB_URL": "jdbc:postgresql://localhost:5432/webbudget",
+  "DB_USER": "sa_webbudget",
+  "DB_PASSWORD": "sa_webbudget",
+
+  "_tracker": "pick the tracker with TRACKER, then fill in that one's token + project/repo",
+  "TRACKER": "forgejo",
+
+  "FORGEJO_URL": "http://localhost:3000",
+  "FORGEJO_REPO": "",
+  "FORGEJO_TOKEN": "",
+
+  "VIKUNJA_URL": "http://localhost6:3456",
+  "VIKUNJA_TOKEN": "",
+  "VIKUNJA_PROJECT": "",
+
+  "OPENPROJECT_URL": "http://localhost:9080",
+  "OPENPROJECT_TOKEN": "",
+  "OPENPROJECT_PROJECT": ""
+}

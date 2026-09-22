@@ -1,0 +1,311 @@
+<!--
+  Copyright (C) 2019 Arthur Gregorio, AG.Software
+
+  This program is free software: you can redistribute it and/or modify
+  it under the terms of the GNU General Public License as published by
+  the Free Software Foundation, either version 3 of the License, or
+  (at your option) any later version.
+
+  This program is distributed in the hope that it will be useful,
+  but WITHOUT ANY WARRANTY; without even the implied warranty of
+  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  GNU General Public License for more details.
+
+  You should have received a copy of the GNU General Public License
+  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+-->
+
+<ui:composition xmlns="http://www.w3.org/1999/xhtml"
+                xmlns:o="http://omnifaces.org/ui"
+                xmlns:jsf="http://xmlns.jcp.org/jsf"
+                xmlns:p="http://primefaces.org/ui"
+                xmlns:h="http://xmlns.jcp.org/jsf/html"
+                xmlns:f="http://xmlns.jcp.org/jsf/core"
+                xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+                template="/template/mainTemplate.xhtml">
+
+    <f:metadata>
+        <f:viewAction action="#{periodStatisticsBean.initialize(param.id)}"/>
+    </f:metadata>
+
+    <ui:define name="pageTitle">
+        #{messages['period-statistics.page-title']}
+    </ui:define>
+
+    <ui:define name="pageDescription">
+        <o:outputFormat value="#{messages['period-statistics.page-description']}">
+            <f:param value="#{periodStatisticsBean.financialPeriod.identification}"/>
+        </o:outputFormat>
+    </ui:define>
+
+    <ui:define name="breadcrumb">
+        <li><a href="#">#{breadcrumb['registration']}</a></li>
+        <li><a href="listFinancialPeriods.xhtml">#{breadcrumb['registration.financial-periods']}</a></li>
+        <li class="active"><a href="#">#{breadcrumb['registration.financial-periods.statistics']}</a></li>
+    </ui:define>
+
+    <ui:define name="content">
+
+        <h:outputStylesheet library="chartjs" name="css/chart.min.css"/>
+
+        <h:outputScript library="chartjs" name="js/chart.min.js" target="head"/>
+        <h:outputScript library="webbudget" name="js/chart-manager.js" target="head"/>
+
+        <div class="row">
+            <div class="col-sm-12">
+                <p:messages id="messages" closable="true"/>
+            </div>
+        </div>
+        <div class="box box-#{profileBean.currentThemeColorName}">
+            <div class="box-header with-border">
+                <div class="row">
+                    <div class="col-md-10">
+                        <span class="label label-success box-title"
+                              style="position: relative; top: 3px;"
+                              jsf:rendered="#{not periodStatisticsBean.financialPeriod.closed}">
+                            #{messages['financial-period.is-open']}
+                        </span>
+                        <span class="label label-danger box-title"
+                              style="position: relative; top: 3px;"
+                              jsf:rendered="#{periodStatisticsBean.financialPeriod.closed}">
+                            #{messages['financial-period.is-closed']}
+                        </span>
+                        <h3 class="box-title"
+                            style="position: relative; top: 4px;">
+                            <p:spacer width="5"/>
+                            <o:outputFormat escape="false"
+                                            value="#{messages['period-statistics.period-description']}">
+                                <f:param value="#{periodStatisticsBean.financialPeriod.identification}"/>
+                                <f:param value="#{periodStatisticsBean.startAsString}"/>
+                                <f:param value="#{periodStatisticsBean.endAsString}"/>
+                            </o:outputFormat>
+                        </h3>
+                    </div>
+                    <div class="col-md-2 text-right">
+                        <p:commandButton process="@this"
+                                         value="#{menu['update']}"
+                                         styleClass="btn btn-flat btn-primary"
+                                         actionListener="#{periodStatisticsBean.loadCharts()}"/>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div jsf:id="resumeBox" class="row">
+            <div class="col-md-4">
+                <div class="small-box bg-green">
+                    <div class="inner">
+                        <h3>
+                            <h:outputText value="#{periodStatisticsBean.revenues}">
+                                <f:convertNumber pattern="¤#,##0.00" currencySymbol="R$ "/>
+                            </h:outputText>
+                        </h3>
+                        <p>#{messages['period-statistics.revenues']}</p>
+                    </div>
+                    <div class="icon">
+                        <i class="fa fa-plus-circle"/>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="small-box bg-red">
+                    <div class="inner">
+                        <h3>
+                            <h:outputText value="#{periodStatisticsBean.expenses}">
+                                <f:convertNumber pattern="¤#,##0.00" currencySymbol="R$ "/>
+                            </h:outputText>
+                        </h3>
+                        <p>#{messages['period-statistics.expenses']}</p>
+                    </div>
+                    <div class="icon">
+                        <i class="fa fa-minus-circle"/>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="small-box bg-blue">
+                    <div class="inner">
+                        <h3>
+                            <h:outputText value="#{periodStatisticsBean.balance}">
+                                <f:convertNumber pattern="¤#,##0.00" currencySymbol="R$ "/>
+                            </h:outputText>
+                        </h3>
+                        <p>#{messages['period-statistics.balance']}</p>
+                    </div>
+                    <div class="icon">
+                        <i class="fa fa-balance-scale"/>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div jsf:id="revenuesChartBox" class="row">
+            <div class="col-md-12">
+                <div class="box box-#{profileBean.currentThemeColorName}">
+                    <div class="box-body">
+                        <div class="row">
+                            <div class="col-md-8">
+                                <p class="text-center">
+                                    <strong>#{messages['period-statistics.revenues-daily-use']}</strong>
+                                </p>
+                                <div class="chart">
+                                    <canvas id="dailyRevenuesUseChart"
+                                            width="1072" height="270"
+                                            style="height: 270px; width: 1072px;"/>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <p class="text-center">
+                                    <strong>#{messages['period-statistics.revenues-cost-center']}</strong>
+                                </p>
+                                <div class="chart-responsive">
+                                    <canvas id="revenuesUseByCostCenterChart"
+                                            width="350" height="160"
+                                            style="width: 350px; height: 160px;"/>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div jsf:id="expensesChartBox" class="row">
+            <div class="col-md-12">
+                <div class="box box-#{profileBean.currentThemeColorName}">
+                    <div class="box-body">
+                        <div class="row">
+                            <div class="col-md-8">
+                                <p class="text-center">
+                                    <strong>#{messages['period-statistics.expenses-daily-use']}</strong>
+                                </p>
+                                <div class="chart">
+                                    <canvas id="dailyExpensesUseChart"
+                                            width="1072" height="270"
+                                            style="height: 270px; width: 1072px;"/>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <p class="text-center">
+                                    <strong>#{messages['period-statistics.expenses-cost-center']}</strong>
+                                </p>
+                                <div class="chart-responsive">
+                                    <canvas id="expensesUseByCostCenterChart"
+                                            width="350" height="160"
+                                            style="width: 350px; height: 160px;"/>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div jsf:id="movementClassUseBox" class="row">
+            <div class="col-md-6">
+                <div class="box box-#{profileBean.currentThemeColorName}">
+                    <div class="box-header with-border">
+                        <h3 class="box-title">
+                            #{messages['period-statistics.expenses-by-movement-class']}
+                        </h3>
+                    </div>
+                    <div class="box-body">
+                        <div class="row">
+                            <div class="col-md-12">
+                                <h:form>
+                                    <p:dataTable rows="25"
+                                                 rowHover="true"
+                                                 paginator="true"
+                                                 sortMode="multiple"
+                                                 sortOrder="ascending"
+                                                 selectionMode="single"
+                                                 paginatorPosition="bottom"
+                                                 var="expenseByMovementClass"
+                                                 paginatorAlwaysVisible="false"
+                                                 rowKey="#{expenseByMovementClass.id}"
+                                                 emptyMessage="#{messages['list.empty']}"
+                                                 selection="#{periodStatisticsBean.selectedUse}"
+                                                 value="#{periodStatisticsBean.expensesByMovementClass}">
+
+                                        <p:ajax event="rowSelect"
+                                                listener="#{periodStatisticsBean.changeToPeriodMovements()}"/>
+
+                                        <p:column sortBy="#{expenseByMovementClass.costCenter}"
+                                                  headerText="#{messages['period-statistics.list.cost-center']}">
+                                            #{expenseByMovementClass.costCenter}
+                                        </p:column>
+                                        <p:column sortBy="#{expenseByMovementClass.movementClass}"
+                                                  headerText="#{messages['period-statistics.list.movement-class']}">
+                                            #{expenseByMovementClass.movementClass}
+                                        </p:column>
+                                        <p:column width="20%"
+                                                  styleClass="text-center"
+                                                  sortBy="#{expenseByMovementClass.value}"
+                                                  headerText="#{messages['period-statistics.list.value']}">
+                                            <h:outputText value="#{expenseByMovementClass.value}">
+                                                <f:convertNumber pattern="¤#,##0.00" currencySymbol="R$ "/>
+                                            </h:outputText>
+                                        </p:column>
+                                    </p:dataTable>
+                                </h:form>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="box box-#{profileBean.currentThemeColorName}">
+                    <div class="box-header with-border">
+                        <h3 class="box-title">
+                            #{messages['period-statistics.revenues-by-movement-class']}
+                        </h3>
+                    </div>
+                    <div class="box-body">
+                        <div class="row">
+                            <div class="col-md-12">
+                                <h:form>
+                                    <p:dataTable rows="25"
+                                                 rowHover="true"
+                                                 paginator="true"
+                                                 sortMode="multiple"
+                                                 sortOrder="ascending"
+                                                 selectionMode="single"
+                                                 paginatorPosition="bottom"
+                                                 var="revenuesByMovementClass"
+                                                 paginatorAlwaysVisible="false"
+                                                 rowKey="#{revenuesByMovementClass.id}"
+                                                 emptyMessage="#{messages['list.empty']}"
+                                                 selection="#{periodStatisticsBean.selectedUse}"
+                                                 value="#{periodStatisticsBean.revenuesByMovementClass}">
+
+                                        <p:ajax event="rowSelect"
+                                                listener="#{periodStatisticsBean.changeToPeriodMovements()}"/>
+
+                                        <p:column sortBy="#{revenuesByMovementClass.costCenter}"
+                                                  headerText="#{messages['period-statistics.list.cost-center']}">
+                                            #{revenuesByMovementClass.costCenter}
+                                        </p:column>
+                                        <p:column sortBy="#{revenuesByMovementClass.movementClass}"
+                                                  headerText="#{messages['period-statistics.list.movement-class']}">
+                                            #{revenuesByMovementClass.movementClass}
+                                        </p:column>
+                                        <p:column width="20%"
+                                                  styleClass="text-center"
+                                                  sortBy="#{revenuesByMovementClass.value}"
+                                                  headerText="#{messages['period-statistics.list.value']}">
+                                            <h:outputText value="#{revenuesByMovementClass.value}">
+                                                <f:convertNumber pattern="¤#,##0.00" currencySymbol="R$ "/>
+                                            </h:outputText>
+                                        </p:column>
+                                    </p:dataTable>
+                                </h:form>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <h:form>
+            <p:remoteCommand autoRun="true"
+                             process="@this"
+                             update="resumeBox movementClassUseBox"
+                             actionListener="#{periodStatisticsBean.loadCharts()}"/>
+        </h:form>
+    </ui:define>
+</ui:composition>

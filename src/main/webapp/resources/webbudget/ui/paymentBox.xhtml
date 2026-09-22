@@ -1,0 +1,145 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!--
+  Copyright (C) 2015 Arthur Gregorio, AG.Software
+ 
+  This program is free software: you can redistribute it and/or modify
+  it under the terms of the GNU General Public License as published by
+  the Free Software Foundation, either version 3 of the License, or
+  (at your option) any later version.
+ 
+  This program is distributed in the hope that it will be useful,
+  but WITHOUT ANY WARRANTY; without even the implied warranty of
+  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  GNU General Public License for more details.
+ 
+  You should have received a copy of the GNU General Public License
+  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+-->
+
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:jsf="http://xmlns.jcp.org/jsf"
+      xmlns:f="http://xmlns.jcp.org/jsf/core"
+      xmlns:c="http://xmlns.jcp.org/jsf/composite">
+
+    <c:interface>
+        <c:attribute name="value"
+                     required="true"
+                     type="br.com.webbudget.domain.entities.financial.Payment"/>
+
+        <c:attribute required="true"
+                     name="walletList"
+                     type="java.util.Collection"/>
+        <c:attribute required="true"
+                     name="creditCardList"
+                     type="java.util.Collection"/>
+        <c:attribute required="true"
+                     name="debitCardList"
+                     type="java.util.Collection"/>
+
+        <c:attribute required="true"
+                     name="paymentMethods"/>
+
+        <c:attribute name="onlyOnCash"
+                     type="java.lang.Boolean"/>
+
+        <c:attribute required="true"
+                     name="managedBean"
+                     type="br.com.webbudget.application.components.ui.AbstractBean"/>
+    </c:interface>
+
+    <c:implementation>
+        <div class="row">
+            <div class="col-sm-6 form-group">
+                <p:outputLabel for="inPaidOn"
+                               value="#{messages['payment.form.paid-on']}: "/>
+                <p:calendar id="inPaidOn"
+                            mask="true"
+                            pattern="dd/MM/yyyy"
+                            converter="localDateConverter"
+                            value="#{cc.attrs.value.paidOn}"/>
+            </div>
+            <div class="col-sm-6 form-group">
+                <p:outputLabel for="inDiscount"
+                               value="#{messages['payment.form.discount']}: "/>
+                <p:inputNumber id="inDiscount"
+                               symbol="R$ "
+                               decimalPlaces="2"
+                               decimalSeparator=","
+                               thousandSeparator="."
+                               value="#{cc.attrs.value.discount}">
+                    <f:converter converterId="javax.faces.BigDecimal" />
+                </p:inputNumber>
+            </div>
+            <div class="col-sm-12 form-group">
+                <p:outputLabel for="inPaymentMethod"
+                               value="#{messages['payment.form.payment-method']}: "/>
+                <p:selectOneMenu id="inPaymentMethod"
+                                 disabled="#{cc.attrs.onlyOnCash}"
+                                 value="#{cc.attrs.value.paymentMethod}"
+                                 converter="omnifaces.GenericEnumConverter">
+                    <p:ajax event="change"
+                            process="@this"
+                            update="sourceBox" />
+                    <f:selectItems var="paymentMethod"
+                                   itemValue="#{paymentMethod}"
+                                   value="#{cc.attrs.paymentMethods}"
+                                   itemLabel="#{enums[paymentMethod]}"/>
+                </p:selectOneMenu>
+            </div>
+            <div jsf:id="sourceBox" class="col-sm-12 form-group">
+                <div class="row">
+                    <div class="col-md-12"
+                         jsf:rendered="#{cc.attrs.value.paidWithCash}">
+                        <p:outputLabel for="inWallet"
+                                       value="#{messages['payment.form.wallet']}: "/>
+                        <p:selectOneMenu id="inWallet"
+                                         value="#{cc.attrs.value.wallet}"
+                                         converter="omnifaces.SelectItemsConverter">
+                            <f:selectItem itemValue="#{null}"
+                                          noSelectionOption="true"
+                                          itemLabel="#{menu['select-one']}" />
+                            <f:selectItems var="wallet"
+                                           itemValue="#{wallet}"
+                                           value="#{cc.attrs.walletList}"
+                                           itemLabel="#{wallet.fullName}"/>
+                        </p:selectOneMenu>
+                    </div>
+                    <div class="col-md-12"
+                         jsf:rendered="#{cc.attrs.value.paidWithCreditCard}">
+                        <p:outputLabel for="inCreditCard"
+                                       value="#{messages['payment.form.credit-card']}: "/>
+                        <p:selectOneMenu id="inCreditCard"
+                                         value="#{cc.attrs.value.card}"
+                                         converter="omnifaces.SelectItemsConverter">
+                            <f:selectItem itemValue="#{null}"
+                                          noSelectionOption="true"
+                                          itemLabel="#{menu['select-one']}" />
+                            <f:selectItems var="creditCard"
+                                           itemValue="#{creditCard}"
+                                           value="#{cc.attrs.creditCardList}"
+                                           itemLabel="#{creditCard.readableName}"/>
+                        </p:selectOneMenu>
+                    </div>
+                    <div class="col-md-12"
+                         jsf:rendered="#{cc.attrs.value.paidWithDebitCard}">
+                        <p:outputLabel for="inDebitCard"
+                                       value="#{messages['payment.form.debit-card']}: "/>
+                        <p:selectOneMenu id="inDebitCard"
+                                         value="#{cc.attrs.value.card}"
+                                         converter="omnifaces.SelectItemsConverter">
+                            <f:selectItem itemValue="#{null}"
+                                          noSelectionOption="true"
+                                          itemLabel="#{menu['select-one']}" />
+                            <f:selectItems var="debitCard"
+                                           itemValue="#{debitCard}"
+                                           value="#{cc.attrs.debitCardList}"
+                                           itemLabel="#{debitCard.readableName}"/>
+                        </p:selectOneMenu>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </c:implementation>
+</html>

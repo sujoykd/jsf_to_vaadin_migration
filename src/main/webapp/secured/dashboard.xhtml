@@ -1,0 +1,328 @@
+<!--
+    Copyright (C) 2014 Arthur Gregorio, AG.Software
+
+    This program is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with this program.  If not, see <http://www.gnu.org/licenses/>.
+-->
+
+<ui:composition xmlns="http://www.w3.org/1999/xhtml"
+                xmlns:jsf="http://xmlns.jcp.org/jsf"
+                xmlns:p="http://primefaces.org/ui"
+                xmlns:h="http://xmlns.jcp.org/jsf/html"
+                xmlns:f="http://xmlns.jcp.org/jsf/core"
+                xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+                template="/template/mainTemplate.xhtml">
+
+    <ui:define name="pageTitle">
+        #{messages['dashboard.page-title']}
+    </ui:define>
+
+    <ui:define name="pageDescription">
+        #{messages['dashboard.page-description']}
+    </ui:define>
+
+    <ui:define name="breadcrumb">
+        <li class="active"><a href="#">#{breadcrumb['dashboard']}</a></li>
+    </ui:define>
+
+    <ui:define name="content">
+
+        <h:outputStylesheet library="chartjs" name="css/chart.min.css"/>
+
+        <h:outputScript library="chartjs" name="js/chart.min.js" target="head"/>
+        <h:outputScript library="webbudget" name="js/chart-manager.js" target="head"/>
+
+        <div jsf:id="expensesResumeBox" class="row">
+            <ui:fragment rendered="#{not dashboardBean.loaded}">
+                <div class="col-md-12 form-group text-center">
+                    <h3 class="box-title">
+                        #{messages['dashboard.loading.quick-status']}
+                    </h3>
+                </div>
+            </ui:fragment>
+            <ui:fragment rendered="#{dashboardBean.loaded}">
+                <div class="col-md-4">
+                    <div class="small-box bg-light-blue">
+                        <div class="inner">
+                            <h3>
+                                <h:outputText value="#{dashboardBean.openPeriodResume.debitCardExpenses}">
+                                    <f:convertNumber pattern="¤#,##0.00" currencySymbol="R$ "/>
+                                </h:outputText>
+                            </h3>
+                            <p>#{messages['dashboard.cards.debit-card-expenses']}</p>
+                        </div>
+                        <div class="icon">
+                            <i class="fa fa-money-check-alt"/>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="small-box bg-olive">
+                        <div class="inner">
+                            <h3>
+                                <h:outputText value="#{dashboardBean.openPeriodResume.creditCardExpenses}">
+                                    <f:convertNumber pattern="¤#,##0.00" currencySymbol="R$ "/>
+                                </h:outputText>
+                            </h3>
+                            <p>#{messages['dashboard.cards.credit-card-expenses']}</p>
+                        </div>
+                        <div class="icon">
+                            <i class="fa fa-credit-card"/>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="small-box bg-purple">
+                        <div class="inner">
+                            <h3>
+                                <h:outputText value="#{dashboardBean.openPeriodResume.cashExpenses}">
+                                    <f:convertNumber pattern="¤#,##0.00" currencySymbol="R$ "/>
+                                </h:outputText>
+                            </h3>
+                            <p>#{messages['dashboard.cards.cash-expenses']}</p>
+                        </div>
+                        <div class="icon">
+                            <i class="fa fa-dollar-sign"/>
+                        </div>
+                    </div>
+                </div>
+            </ui:fragment>
+        </div>
+        <div jsf:id="periodResumeBox" class="row">
+            <ui:fragment rendered="#{not dashboardBean.loaded}">
+                <div class="col-md-12 form-group text-center">
+                    <h3 class="box-title">
+                        #{messages['dashboard.loading.period-resume']}
+                    </h3>
+                </div>
+            </ui:fragment>
+            <ui:fragment rendered="#{dashboardBean.loaded}">
+                <div class="col-md-12">
+                    <div class="box box-#{profileBean.currentThemeColorName}">
+                        <div class="box-header with-border">
+                            <h3 class="box-title">
+                                #{messages['dashboard.financial-period.resume']}
+                            </h3>
+                        </div>
+                        <div class="box-body">
+                            <div class="row">
+                                <div class="col-md-8">
+                                    <p class="text-center">
+                                        <strong>#{messages['dashboard.financial-period.last-six']}</strong>
+                                    </p>
+                                    <div class="chart">
+                                        <canvas id="periodResultChart" style="height: 180px; width: 1072px;" width="1072" height="180"/>
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <p class="text-center">
+                                        <strong>#{messages['dashboard.financial-period.goal']}</strong>
+                                    </p>
+                                    <div class="progress-group">
+                                        <span class="progress-text">#{messages['dashboard.goals.revenues']}</span>
+                                        <span class="progress-number">
+                                        <h:outputText styleClass="text-bold"
+                                                      value="#{dashboardBean.openPeriodResume.revenues}">
+                                            <f:convertNumber pattern="¤#,##0.00" currencySymbol="R$ "/>
+                                        </h:outputText> /
+                                        <h:outputText value="#{dashboardBean.openPeriodResume.revenuesGoal}">
+                                            <f:convertNumber pattern="¤#,##0.00" currencySymbol="R$ "/>
+                                        </h:outputText>
+                                    </span>
+                                        <div class="progress sm">
+                                            <div class="progress-bar progress-bar-green" style="width: #{dashboardBean.calculateRevenuesGoalPercentage()}%"></div>
+                                        </div>
+                                    </div>
+                                    <div class="progress-group">
+                                        <span class="progress-text">#{messages['dashboard.goals.expenses']}</span>
+                                        <span class="progress-number">
+                                        <h:outputText styleClass="text-bold"
+                                                      value="#{dashboardBean.openPeriodResume.expenses}">
+                                            <f:convertNumber pattern="¤#,##0.00" currencySymbol="R$ "/>
+                                        </h:outputText> /
+                                        <h:outputText value="#{dashboardBean.openPeriodResume.expensesGoal}">
+                                            <f:convertNumber pattern="¤#,##0.00" currencySymbol="R$ "/>
+                                        </h:outputText>
+                                    </span>
+                                        <div class="progress sm">
+                                            <div class="progress-bar progress-bar-red" style="width: #{dashboardBean.calculateExpensesGoalPercentage()}%"></div>
+                                        </div>
+                                    </div>
+                                    <div class="progress-group">
+                                        <span class="progress-text">#{messages['dashboard.goals.credit-card']}</span>
+                                        <span class="progress-number">
+                                        <h:outputText styleClass="text-bold"
+                                                      value="#{dashboardBean.openPeriodResume.creditCardExpenses}">
+                                            <f:convertNumber pattern="¤#,##0.00" currencySymbol="R$ "/>
+                                        </h:outputText> /
+                                        <h:outputText value="#{dashboardBean.openPeriodResume.creditCardGoal}">
+                                            <f:convertNumber pattern="¤#,##0.00" currencySymbol="R$ "/>
+                                        </h:outputText>
+                                    </span>
+                                        <div class="progress sm">
+                                            <div class="progress-bar progress-bar-yellow" style="width: #{dashboardBean.calculateCreditCardsGoalPercentage()}%"></div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="box-footer">
+                            <div class="row">
+                                <div class="col-sm-3 col-xs-6">
+                                    <div class="description-block border-right">
+                                    <span class="description-percentage text-green"
+                                          jsf:rendered="#{dashboardBean.compareRevenue() gt 0}">
+                                        <i class="fa fa-caret-up"/> #{dashboardBean.calculateRevenuePercentage()}%
+                                    </span>
+                                        <span class="description-percentage text-blue"
+                                              jsf:rendered="#{dashboardBean.compareRevenue() eq 0}">
+                                        <i class="fa fa-caret-left"/> #{dashboardBean.calculateRevenuePercentage()}%
+                                    </span>
+                                        <span class="description-percentage text-red"
+                                              jsf:rendered="#{dashboardBean.compareRevenue() lt 0}">
+                                        <i class="fa fa-caret-down"/> #{dashboardBean.calculateRevenuePercentage()}%
+                                    </span>
+                                        <h5 class="description-header">
+                                            <h:outputText value="#{dashboardBean.openPeriodResume.revenues}">
+                                                <f:convertNumber pattern="¤#,##0.00" currencySymbol="R$ "/>
+                                            </h:outputText>
+                                        </h5>
+                                        <span class="description-text">#{messages['dashboard.financial-period.revenues']}</span>
+                                    </div>
+                                </div>
+                                <div class="col-sm-3 col-xs-6">
+                                    <div class="description-block border-right">
+                                    <span class="description-percentage text-green"
+                                          jsf:rendered="#{dashboardBean.compareExpense() gt 0}">
+                                        <i class="fa fa-caret-up"/> #{dashboardBean.calculateExpensePercentage()}%
+                                    </span>
+                                        <span class="description-percentage text-blue"
+                                              jsf:rendered="#{dashboardBean.compareExpense() eq 0}">
+                                        <i class="fa fa-caret-left"/> #{dashboardBean.calculateExpensePercentage()}%
+                                    </span>
+                                        <span class="description-percentage text-red"
+                                              jsf:rendered="#{dashboardBean.compareExpense() lt 0}">
+                                        <i class="fa fa-caret-down"/> #{dashboardBean.calculateExpensePercentage()}%
+                                    </span>
+                                        <h5 class="description-header">
+                                            <h:outputText value="#{dashboardBean.openPeriodResume.expenses}">
+                                                <f:convertNumber pattern="¤#,##0.00" currencySymbol="R$ "/>
+                                            </h:outputText>
+                                        </h5>
+                                        <span class="description-text">#{messages['dashboard.financial-period.expenses']}</span>
+                                    </div>
+                                </div>
+                                <div class="col-sm-3 col-xs-6">
+                                    <div class="description-block border-right">
+                                    <span class="description-percentage text-green"
+                                          jsf:rendered="#{dashboardBean.compareBalance() gt 0}">
+                                        <i class="fa fa-caret-up"/> #{dashboardBean.calculateBalancePercentage()}%
+                                    </span>
+                                        <span class="description-percentage text-blue"
+                                              jsf:rendered="#{dashboardBean.compareBalance() eq 0}">
+                                        <i class="fa fa-caret-left"/> #{dashboardBean.calculateBalancePercentage()}%
+                                    </span>
+                                        <span class="description-percentage text-red"
+                                              jsf:rendered="#{dashboardBean.compareBalance() lt 0}">
+                                        <i class="fa fa-caret-down"/> #{dashboardBean.calculateBalancePercentage()}%
+                                    </span>
+                                        <h5 class="description-header">
+                                            <h:outputText value="#{dashboardBean.openPeriodResume.balance}">
+                                                <f:convertNumber pattern="¤#,##0.00" currencySymbol="R$ "/>
+                                            </h:outputText>
+                                        </h5>
+                                        <span class="description-text">#{messages['dashboard.financial-period.balance']}</span>
+                                    </div>
+                                </div>
+                                <div class="col-sm-3 col-xs-6">
+                                    <div class="description-block">
+                                    <span class="description-percentage text-green"
+                                          jsf:rendered="#{dashboardBean.compareAccumulated() gt 0}">
+                                        <i class="fa fa-caret-up"/> #{dashboardBean.calculateAccumulatedPercentage()}%
+                                    </span>
+                                        <span class="description-percentage text-blue"
+                                              jsf:rendered="#{dashboardBean.compareAccumulated() eq 0}">
+                                        <i class="fa fa-caret-left"/> #{dashboardBean.calculateAccumulatedPercentage()}%
+                                    </span>
+                                        <span class="description-percentage text-red"
+                                              jsf:rendered="#{dashboardBean.compareAccumulated() lt 0}">
+                                        <i class="fa fa-caret-down"/> #{dashboardBean.calculateAccumulatedPercentage()}%
+                                    </span>
+                                        <h5 class="description-header">
+                                            <h:outputText value="#{dashboardBean.openPeriodResume.accumulated}">
+                                                <f:convertNumber pattern="¤#,##0.00" currencySymbol="R$ "/>
+                                            </h:outputText>
+                                        </h5>
+                                        <span class="description-text">#{messages['dashboard.financial-period.accumulated']}</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </ui:fragment>
+        </div>
+        <div jsf:id="costCentersResumeBox" class="row">
+            <ui:fragment rendered="#{not dashboardBean.loaded}">
+                <div class="col-md-12 form-group text-center">
+                    <h3 class="box-title">
+                        #{messages['dashboard.loading.cost-center-resume']}
+                    </h3>
+                </div>
+            </ui:fragment>
+            <ui:fragment rendered="#{dashboardBean.loaded}">
+                <div class="col-md-6">
+                    <div class="box box-#{profileBean.currentThemeColorName}">
+                        <div class="box-header with-border">
+                            <h3 class="box-title">
+                                #{messages['dashboard.chart.cost-center-revenues']}
+                            </h3>
+                        </div>
+                        <div class="box-body">
+                            <div class="chart-responsive">
+                                <canvas id="costCenterRevenuesChart"
+                                        width="350"
+                                        height="160"
+                                        style="width: 350px; height: 160px;"/>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="box box-#{profileBean.currentThemeColorName}">
+                        <div class="box-header with-border">
+                            <h3 class="box-title">
+                                #{messages['dashboard.chart.cost-center-expenses']}
+                            </h3>
+                        </div>
+                        <div class="box-body">
+                            <div class="chart-responsive">
+                                <canvas id="costCenterExpensesChart"
+                                        width="350"
+                                        height="160"
+                                        style="width: 350px; height: 160px;"/>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </ui:fragment>
+        </div>
+
+        <h:form>
+            <p:remoteCommand autoRun="true"
+                             process="@this"
+                             actionListener="#{dashboardBean.initialize()}"
+                             update="expensesResumeBox costCentersResumeBox periodResumeBox"/>
+        </h:form>
+    </ui:define>
+</ui:composition>

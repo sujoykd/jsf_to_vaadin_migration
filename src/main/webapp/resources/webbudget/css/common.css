@@ -1,0 +1,96 @@
+@charset "utf-8";
+
+/* 
+    All common css to be used across the application
+
+    Author     : Arthur Gregorio
+    Created on : 19/01/2016
+*/
+
+/*font face and logo font settings*/
+@font-face {
+    font-family: 'ReklameScript';
+    font-style: normal;
+    font-weight: normal;
+    src: local('ReklameScript'), url("#{resource['webbudget:fonts/ReklameScript.otf']}") format('truetype');
+}
+
+.wb-font {
+    font-family: 'ReklameScript', serif !important;
+}
+.wb-logo-prefix {
+    color: #007fff;
+}
+.wb-logo-suffix {
+    color: black;
+}
+
+/*some utilities*/
+.margin-b-10 {
+    margin-bottom: 10px;
+}
+.margin-t-10 {
+    margin-top: 10px;
+}
+.margin-t-15 {
+    margin-top: 15px;
+}
+.margin-t-30 {
+    margin-top: 30px;
+}
+.padding-t-10 {
+    padding-top: 10px;
+}
+.padding-t-25 {
+    padding-top: 25px;
+}
+
+/*all dialogs must use this class to be well positioned in the screen*/
+.dialog-margin {
+    margin-top: 80px;
+}
+
+/*custom label for the wallet status*/
+.wallet-status-label {
+    position: relative;
+    top: 8px;
+}
+
+/*actual balance box on the transference form*/
+.actual-balance {
+    font-size: 40px;
+    display: inherit;
+}
+
+/*theme selection block*/
+.skin-block {
+    float:left;
+    width: 33.33333%;
+    padding: 5px;
+}
+.skin-logo {
+    display:block;
+    width: 20%;
+    float: left;
+    height: 7px;
+}
+
+/*remove the browser input controls*/
+input[type=number] {
+    -moz-appearance: textfield;
+}
+input[type=number]::-webkit-inner-spin-button,
+input[type=number]::-webkit-outer-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+}
+
+/*in all td use middle alignment*/
+td {
+    vertical-align: middle;
+}
+
+/*line to mark a check movement at the invoice*/
+.checked-line {
+    text-decoration: line-through;
+}

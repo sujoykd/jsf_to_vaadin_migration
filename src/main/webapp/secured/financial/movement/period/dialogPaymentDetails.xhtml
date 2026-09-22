@@ -1,0 +1,85 @@
+<!--
+  Copyright (C) 2014 Arthur Gregorio, AG.Software
+ 
+  This program is free software: you can redistribute it and/or modify
+  it under the terms of the GNU General Public License as published by
+  the Free Software Foundation, either version 3 of the License, or
+  (at your option) any later version.
+ 
+  This program is distributed in the hope that it will be useful,
+  but WITHOUT ANY WARRANTY; without even the implied warranty of
+  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  GNU General Public License for more details.
+ 
+  You should have received a copy of the GNU General Public License
+  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+-->
+
+<p:dialog xmlns="http://www.w3.org/1999/xhtml"
+          xmlns:p="http://primefaces.org/ui"
+          xmlns:jsf="http://xmlns.jcp.org/jsf"
+          xmlns:h="http://java.sun.com/jsf/html"
+          xmlns:f="http://xmlns.jcp.org/jsf/core"
+          id="detailPaymentDialog"
+          width="500"
+          modal="true"
+          closable="true"
+          resizable="false"
+          closeOnEscape="true"
+          widgetVar="dialogDetailPayment"
+          header="#{messages['detail-payment.dialog.title']}">
+
+    <div class="row">
+        <div class="col-sm-4 form-group">
+            <p:outputLabel value="#{messages['detail-payment.form.paid-on']}: "/>
+            <br/>
+            <h:outputText converter="localDateConverter"
+                          value="#{periodMovementBean.value.payment.paidOn}"/>
+        </div>
+        <div class="col-sm-4 form-group">
+            <p:outputLabel value="#{messages['detail-payment.form.discount']}: "/>
+            <br/>
+            <h:outputText value="#{periodMovementBean.value.payment.discount}">
+                <f:convertNumber pattern="¤#,##0.00" currencySymbol="R$ "/>
+            </h:outputText>
+        </div>
+        <div class="col-sm-4 form-group">
+            <p:outputLabel value="#{messages['detail-payment.form.paid-value']}: "/>
+            <br/>
+            <h:outputText value="#{periodMovementBean.value.payment.paidValue}">
+                <f:convertNumber pattern="¤#,##0.00" currencySymbol="R$ "/>
+            </h:outputText>
+        </div>
+        <div class="col-sm-4 form-group">
+            <p:outputLabel value="#{messages['detail-payment.form.method']}: "/>
+            <br/>
+            <h:outputText value="#{enums[periodMovementBean.value.payment.paymentMethod]}"/>
+        </div>
+        <div class="col-sm-8 form-group"
+             jsf:rendered="#{periodMovementBean.value.paidWithCreditCard}">
+            <p:outputLabel value="#{messages['detail-payment.form.credit-card']}: "/>
+            <br/>
+            <h:outputText value="#{periodMovementBean.value.payment.card.readableName}"/>
+        </div>
+        <div class="col-sm-8 form-group"
+             jsf:rendered="#{periodMovementBean.value.paidWithDebitCard}">
+            <p:outputLabel value="#{messages['detail-payment.form.debit-card']}: "/>
+            <br/>
+            <h:outputText value="#{periodMovementBean.value.payment.card.readableName}"/>
+        </div>
+        <div class="col-sm-8 form-group"
+             jsf:rendered="#{periodMovementBean.value.paidWithCash}">
+            <p:outputLabel value="#{messages['detail-payment.form.wallet']}: "/>
+            <br/>
+            <h:outputText value="#{periodMovementBean.value.payment.wallet.name}"/>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-sm-12 text-right">
+            <p:commandButton immediate="true"
+                             value="#{menu['close']}"
+                             styleClass="btn btn-flat btn-primary"
+                             onclick="PF('dialogDetailPayment').hide()"/>
+        </div>
+    </div>
+</p:dialog>

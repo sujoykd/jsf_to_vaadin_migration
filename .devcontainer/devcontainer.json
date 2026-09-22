@@ -1,0 +1,41 @@
+{
+  "name": "web-budget — Claude + Playwright (jsf-screenshot-tour)",
+  "build": {
+    "dockerfile": "Dockerfile",
+    "args": { "PLAYWRIGHT_VERSION": "1.49.1" }
+  },
+
+  // host.docker.internal -> the host, so the skill can reach a JSF app that is
+  // run on the host (e.g. the docker/ compose stack publishing :8443).
+  // --shm-size keeps Chromium stable for screenshotting.
+  "runArgs": [
+    "--add-host=host.docker.internal:host-gateway",
+    "--shm-size=1g"
+  ],
+
+  "containerEnv": {
+    "PLAYWRIGHT_BROWSERS_PATH": "/ms-playwright"
+  },
+
+  // Optional: pass an API key through if you authenticate Claude Code that way.
+  // Leave unset to log in interactively (persisted via the volume mount below).
+  "remoteEnv": {
+    "ANTHROPIC_API_KEY": "${localEnv:ANTHROPIC_API_KEY}"
+  },
+
+  // Persist Claude Code's login/config across container rebuilds.
+  "mounts": [
+    "source=web-budget-claude-config,target=/root/.claude,type=volume"
+  ],
+
+  "customizations": {
+    "vscode": {
+      "extensions": ["anthropic.claude-code"]
+    }
+  },
+
+  // Sanity check the toolchain on first create (does not run the skill).
+  "postCreateCommand": "claude --version && python3 --version && node --version",
+
+  "remoteUser": "root"
+}

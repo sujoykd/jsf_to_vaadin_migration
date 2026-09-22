@@ -1,0 +1,227 @@
+<!--
+  Copyright (C) 2015 Arthur Gregorio, AG.Software
+ 
+  This program is free software: you can redistribute it and/or modify
+  it under the terms of the GNU General Public License as published by
+  the Free Software Foundation, either version 3 of the License, or
+  (at your option) any later version.
+ 
+  This program is distributed in the hope that it will be useful,
+  but WITHOUT ANY WARRANTY; without even the implied warranty of
+  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  GNU General Public License for more details.
+ 
+  You should have received a copy of the GNU General Public License
+  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+-->
+
+<ui:composition xmlns="http://www.w3.org/1999/xhtml"
+                xmlns:o="http://omnifaces.org/ui"
+                xmlns:p="http://primefaces.org/ui"
+                xmlns:jsf="http://xmlns.jcp.org/jsf"
+                xmlns:h="http://xmlns.jcp.org/jsf/html"
+                xmlns:f="http://xmlns.jcp.org/jsf/core"
+                xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+                xmlns:wb="http://xmlns.jcp.org/jsf/composite/webbudget/ui"
+                template="/template/mainTemplate.xhtml">
+
+    <f:metadata>
+        <f:viewAction action="#{balanceHistoricBean.initialize(param.id)}"/>
+    </f:metadata>
+
+    <ui:define name="pageTitle">
+        #{messages['balance-historic.page-title']}
+    </ui:define>
+
+    <ui:define name="pageDescription">
+        <o:outputFormat value="#{messages['balance-historic.page-description']}">
+            <f:param value="#{balanceHistoricBean.wallet.fullName}"/>
+        </o:outputFormat>
+    </ui:define>
+
+    <ui:define name="breadcrumb">
+        <li><a href="#">#{breadcrumb['registration']}</a></li>
+        <li><a href="listWallets.xhtml">#{breadcrumb['registration.wallets']}</a></li>
+        <li class="active"><a href="#">#{breadcrumb['registration.wallets.balance-historic']}</a></li>
+    </ui:define>
+
+    <ui:define name="content">
+        <h:form>
+            <div class="box box-#{profileBean.currentThemeColorName}">
+                <div class="box-header with-border">
+                    <div class="row">
+                        <div class="col-xs-3">
+                            <p:selectOneMenu converter="omnifaces.GenericEnumConverter"
+                                             value="#{balanceHistoricBean.filter.reasonType}">
+                                <f:selectItem value="#{null}"
+                                              itemLabel="#{menu['select-one.all']}"/>
+                                <f:selectItems var="reasonType"
+                                               itemValue="#{reasonType}"
+                                               itemLabel="#{enums[reasonType]}"
+                                               value="#{balanceHistoricBean.filter.reasonTypes}"/>
+                            </p:selectOneMenu>
+                        </div>
+                        <div class="col-xs-3">
+                            <p:selectOneMenu converter="omnifaces.GenericEnumConverter"
+                                             value="#{balanceHistoricBean.filter.balanceType}">
+                                <f:selectItem value="#{null}"
+                                              itemLabel="#{menu['select-one.all']}"/>
+                                <f:selectItems var="balanceType"
+                                               itemValue="#{balanceType}"
+                                               itemLabel="#{enums[balanceType]}"
+                                               value="#{balanceHistoricBean.filter.balanceTypes}"/>
+                            </p:selectOneMenu>
+                        </div>
+                        <div class="col-md-3">
+                            <p:calendar mask="true"
+                                        pattern="dd/MM/yyyy"
+                                        converter="localDateConverter"
+                                        value="#{balanceHistoricBean.filter.operationDate}"
+                                        placeholder="#{messages['balance-historic.operation-date']}"/>
+                        </div>
+                        <div class="col-md-3 text-right">
+                            <p:commandButton update="boxBody"
+                                             value="#{menu['filter']}"
+                                             styleClass="btn btn-flat btn-success"
+                                             action="#{balanceHistoricBean.filterList()}"/>
+                            <p:spacer width="5"/>
+                            <p:commandButton update="boxBody"
+                                             title="#{menu['filter-clear']}"
+                                             icon="fa fa-trash"
+                                             styleClass="btn btn-flat btn-danger"
+                                             action="#{balanceHistoricBean.clearFilter()}"/>
+                            <p:spacer width="5"/>
+                            <p:commandButton value="#{menu['back']}"
+                                             styleClass="btn btn-flat btn-primary"
+                                             action="#{balanceHistoricBean.changeToWalletsListing()}"/>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </h:form>
+        <div jsf:id="boxBody" class="box-empty">
+            <div class="row">
+                <div class="col-md-12 text-center"
+                     jsf:rendered="#{empty balanceHistoricBean.walletBalanceDates}">
+                    <h3>#{messages['balance-historic.no-historic']}</h3>
+                    <h4>
+                        <p:link value="#{menu['back']}" outcome="listWallets.xhtml"/>
+                    </h4>
+                </div>
+                <div class="col-md-12"
+                     jsf:rendered="#{not empty balanceHistoricBean.walletBalanceDates}">
+                    <p:dataScroller chunkSize="5"
+                                    var="movementDate"
+                                    value="#{balanceHistoricBean.walletBalanceDates}">
+
+                        <f:facet name="loader">
+                            <p:commandButton type="button" value="#{menu['load-more']}"/>
+                        </f:facet>
+
+                        <ul class="timeline">
+                            <li class="time-label">
+                            <span class="bg-teal">
+                                <h:outputText value="#{movementDate}">
+                                    <f:converter converterId="localDateConverter"/>
+                                </h:outputText>
+                            </span>
+                            </li>
+                            <ui:repeat var="balance" value="#{balanceHistoricBean.balancesByDate(movementDate)}">
+                                <li style="margin-right: 0">
+                                    <i class="fa fa-minus bg-red"
+                                       jsf:rendered="#{balance.balanceType eq 'DEBIT'}"/>
+                                    <i class="fa fa-plus bg-green"
+                                       jsf:rendered="#{balance.balanceType eq 'CREDIT'}"/>
+                                    <div class="timeline-item" style="margin-right: 0">
+                                    <span class="time">
+                                        <i class="fa fa-clock"/>
+                                        <p:spacer width="5"/>
+                                        #{messages['balance-historic.movement-date']}:
+                                        <h:outputText value="#{balance.createdOn}">
+                                            <f:converter converterId="localDateTimeConverter"/>
+                                        </h:outputText>
+                                    </span>
+                                        <h3 class="timeline-header">
+                                            <h:outputText rendered="#{balance.credit}"
+                                                          styleClass="text-green text-bold"
+                                                          value="#{enums[balance.balanceType]}"/>
+                                            <h:outputText rendered="#{balance.debit}"
+                                                          styleClass="text-red text-bold"
+                                                          value="#{enums[balance.balanceType]}"/>
+                                            <p:spacer width="5"/>
+                                            <span class="label bg-aqua"
+                                                  jsf:rendered="#{balance.adjustment}">
+                                            #{enums[balance.reasonType]}
+                                        </span>
+                                            <span class="label bg-orange"
+                                                  jsf:rendered="#{balance.transference}">
+                                            #{enums[balance.reasonType]}
+                                        </span>
+                                            <span class="label bg-green"
+                                                  jsf:rendered="#{balance.revenue}">
+                                            #{enums[balance.reasonType]}
+                                        </span>
+                                            <span class="label bg-red"
+                                                  jsf:rendered="#{balance.expense}">
+                                            #{enums[balance.reasonType]}
+                                        </span>
+                                            <span class="label bg-maroon"
+                                                  jsf:rendered="#{balance.debitCard}">
+                                            #{enums[balance.reasonType]}
+                                        </span>
+                                            <span class="label bg-blue"
+                                                  jsf:rendered="#{balance.return}">
+                                            #{enums[balance.reasonType]}
+                                        </span>
+                                        </h3>
+                                        <div class="timeline-body">
+                                            <div class="row">
+                                                <div class="col-sm-4">
+                                                    <p:outputLabel value="#{messages['balance-historic.old-balance']}"/>
+                                                    <h4>
+                                                        <h:outputText value="#{balance.oldBalance}"
+                                                                      styleClass="#{balance.oldBalanceNegative ? 'text-red' : 'text-green'}">
+                                                            <f:convertNumber pattern="¤#,##0.00" currencySymbol="R$ "/>
+                                                        </h:outputText>
+                                                    </h4>
+                                                </div>
+                                                <div class="col-sm-4">
+                                                    <p:outputLabel
+                                                            value="#{messages['balance-historic.movemented-value']}"/>
+                                                    <h4>
+                                                        <h:outputText value="#{balance.transactionValue}">
+                                                            <f:convertNumber pattern="¤#,##0.00" currencySymbol="R$ "/>
+                                                        </h:outputText>
+                                                    </h4>
+                                                </div>
+                                                <div class="col-sm-4">
+                                                    <p:outputLabel
+                                                            value="#{messages['balance-historic.actual-balance']}"/>
+                                                    <h4>
+                                                        <h:outputText value="#{balance.actualBalance}"
+                                                                      styleClass="#{balance.actualBalanceNegative ? 'text-red' : 'text-green'}">
+                                                            <f:convertNumber pattern="¤#,##0.00" currencySymbol="R$ "/>
+                                                        </h:outputText>
+                                                    </h4>
+                                                </div>
+                                            </div>
+                                            <div class="row"
+                                                 jsf:rendered="#{not empty balance.observations}">
+                                                <div class="col-sm-12">
+                                                    <p:outputLabel
+                                                            value="#{messages['balance-historic.observations']}"/>
+                                                    <h4>#{balance.observations}</h4>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </li>
+                            </ui:repeat>
+                        </ul>
+                    </p:dataScroller>
+                </div>
+            </div>
+        </div>
+        <wb:backToTop/>
+    </ui:define>
+</ui:composition>

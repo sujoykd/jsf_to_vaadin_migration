@@ -1,0 +1,47 @@
+<?xml version='1.0' encoding='UTF-8'?>
+
+<!--
+  Copyright (C) 2015 Arthur Gregorio, AG.Software
+
+  This program is free software: you can redistribute it and/or modify
+  it under the terms of the GNU General Public License as published by
+  the Free Software Foundation, either version 3 of the License, or
+  (at your option) any later version.
+
+  This program is distributed in the hope that it will be useful,
+  but WITHOUT ANY WARRANTY; without even the implied warranty of
+  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  GNU General Public License for more details.
+
+  You should have received a copy of the GNU General Public License
+  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+-->
+
+<persistence xmlns="http://xmlns.jcp.org/xml/ns/persistence"
+             xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+             xsi:schemaLocation="http://xmlns.jcp.org/xml/ns/persistence http://xmlns.jcp.org/xml/ns/persistence/persistence_2_2.xsd"
+             version="2.2">
+
+    <persistence-unit name="webBudgetPU" transaction-type="JTA">
+        <provider>org.hibernate.jpa.HibernatePersistenceProvider</provider>
+        <jta-data-source>java:/datasources/webBudgetDS</jta-data-source>
+
+        <exclude-unlisted-classes>false</exclude-unlisted-classes>
+
+        <properties>
+            <!--hibernate core configs-->
+            <property name="hibernate.show_sql" value="${orm.show_sql}"/>
+            <property name="hibernate.hbm2ddl.auto" value="${orm.ddl_auto}"/>
+            <property name="hibernate.connection.autocommit" value="false"/>
+            <property name="hibernate.dialect" value="org.hibernate.dialect.PostgreSQL95Dialect"/>
+
+            <!--hibernate envers configs-->
+            <property name="org.hibernate.envers.store_data_at_delete" value="true"/>
+            <property name="org.hibernate.envers.revision_field_name" value="revision"/>
+            <property name="org.hibernate.envers.revision_type_field_name" value="revision_type"/>
+
+            <!--disable bean validation on save/update operations-->
+            <property name="javax.persistence.validation.mode" value="none"/>
+        </properties>
+    </persistence-unit>
+</persistence>

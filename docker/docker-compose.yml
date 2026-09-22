@@ -1,0 +1,73 @@
+services:
+  webbudget_postgres:
+    container_name: webbudget_postgres
+    image: "postgres:17-alpine"
+    ports:
+      - "5432:5432"
+    environment:
+      - POSTGRES_DB=webbudget
+      - POSTGRES_USER=sa_webbudget
+      - POSTGRES_PASSWORD=sa_webbudget
+    volumes:
+      - ./create-schemas.sql:/docker-entrypoint-initdb.d/create-schemas.sql
+      - postgres_data:/var/lib/postgresql/data
+    command: ["postgres", "-c", "log_statement=all", "-c", "log_destination=stderr"]
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U sa_webbudget -d webbudget"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      webbudget_network:
+        aliases:
+          - webbudget_postgres
+
+  webbudget_pgadmin4:
+    container_name: webbudget_pgadmin4
+    image: "dpage/pgadmin4"
+    ports:
+      - "6060:80"
+    environment:
+      - PGADMIN_DEFAULT_EMAIL=admin@webbudget.com
+      - PGADMIN_DEFAULT_PASSWORD=webbudget
+      - GUNICORN_ACCESS_LOGFILE=/tmp/access-log.log
+    depends_on:
+      webbudget_postgres:
+        condition: service_healthy
+    networks:
+      webbudget_network:
+        aliases:
+          - webbudget_pgadmin4
+
+  webbudget_app:
+    container_name: webbudget_app
+    image: quay.io/wildfly/wildfly:26.1.3.Final-jdk17
+    user: root
+    entrypoint: /opt/config/entrypoint.sh
+    ports:
+      - "8443:8443"   # HTTPS (self-signed cert — expect browser warning in dev)
+      - "9990:9990"   # WildFly management console
+    volumes:
+      - ./wildfly:/opt/config:ro             # entrypoint.sh, configure.cli, module.xml
+      - ../target:/opt/app:ro               # built WAR (run: ./mvnw clean package -DskipTests)
+      - wildfly_pg_module:/opt/jboss/wildfly/modules/org/postgresql  # persists downloaded driver
+    depends_on:
+      webbudget_postgres:
+        condition: service_healthy
+    environment:
+      - DB_HOST=webbudget_postgres
+      - DB_NAME=webbudget
+      - DB_USER=sa_webbudget
+      - DB_PASSWORD=sa_webbudget
+    networks:
+      webbudget_network:
+        aliases:
+          - webbudget_app
+
+networks:
+  webbudget_network:
+    driver: bridge
+
+volumes:
+  postgres_data:
+  wildfly_pg_module:

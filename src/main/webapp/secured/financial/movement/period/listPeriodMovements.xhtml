@@ -1,0 +1,351 @@
+<!--
+  Copyright (C) 2014 Arthur Gregorio, AG.Software
+ 
+  This program is free software: you can redistribute it and/or modify
+  it under the terms of the GNU General Public License as published by
+  the Free Software Foundation, either version 3 of the License, or
+  (at your option) any later version.
+ 
+  This program is distributed in the hope that it will be useful,
+  but WITHOUT ANY WARRANTY; without even the implied warranty of
+  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  GNU General Public License for more details.
+ 
+  You should have received a copy of the GNU General Public License
+  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+-->
+
+<ui:composition xmlns="http://www.w3.org/1999/xhtml"
+                xmlns:o="http://omnifaces.org/ui"
+                xmlns:p="http://primefaces.org/ui"
+                xmlns:jsf="http://xmlns.jcp.org/jsf"
+                xmlns:h="http://xmlns.jcp.org/jsf/html"
+                xmlns:f="http://xmlns.jcp.org/jsf/core"
+                xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+                xmlns:wb="http://xmlns.jcp.org/jsf/composite/webbudget/ui"
+                template="/template/mainTemplate.xhtml">
+
+    <f:metadata>
+        <f:viewAction action="#{periodMovementBean.initialize(param.periodId, param.costCenterId, param.movementClassId)}"/>
+    </f:metadata>
+
+    <ui:define name="pageTitle">
+        #{messages['period-movement.page-title']}
+    </ui:define>
+
+    <ui:define name="pageDescription">
+        #{messages['period-movement.page-description']}
+    </ui:define>
+
+    <ui:define name="breadcrumb">
+        <li><a href="#">#{breadcrumb['financial']}</a></li>
+        <li><a href="#">#{breadcrumb['financial.movements']}</a></li>
+        <li class="active">
+            <a href="listPeriodMovements.xhtml">
+                #{breadcrumb['financial.movements.period']}
+            </a>
+        </li>
+    </ui:define>
+
+    <ui:define name="content">
+        <div class="row">
+            <div class="col-md-12 col-sm-12 col-xs-12">
+                <p:messages id="messages" closable="true"/>
+            </div>
+        </div>
+        <div jsf:id="resumeBox" class="row">
+            <div class="col-lg-3 col-xs-6">
+                <div class="small-box bg-orange">
+                    <div class="inner">
+                        <h3>
+                            <h:outputText value="#{periodMovementBean.periodMovementResume.totalOpen}">
+                                <f:convertNumber pattern="¤#,##0.00" currencySymbol="R$ "/>
+                            </h:outputText>
+                        </h3>
+                        <p>#{messages['period-movement.list.total-open']}</p>
+                    </div>
+                    <div class="icon">
+                        <i class="fa fa-exclamation"/>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-3 col-xs-6">
+                <div class="small-box bg-blue">
+                    <div class="inner">
+                        <h3>
+                            <h:outputText value="#{periodMovementBean.periodMovementResume.totalPaid}">
+                                <f:convertNumber pattern="¤#,##0.00" currencySymbol="R$ "/>
+                            </h:outputText>
+                        </h3>
+                        <p>#{messages['period-movement.list.total-paid']}</p>
+                    </div>
+                    <div class="icon">
+                        <i class="fa fa-check"/>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-3 col-xs-6">
+                <div class="small-box bg-green">
+                    <div class="inner">
+                        <h3>
+                            <h:outputText value="#{periodMovementBean.periodMovementResume.totalRevenue}">
+                                <f:convertNumber pattern="¤#,##0.00" currencySymbol="R$ "/>
+                            </h:outputText>
+                        </h3>
+                        <p>#{messages['period-movement.list.total-revenue']}</p>
+                    </div>
+                    <div class="icon">
+                        <i class="fa fa-hand-holding-usd"/>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-3 col-xs-6">
+                <div class="small-box bg-red">
+                    <div class="inner">
+                        <h3>
+                            <h:outputText value="#{periodMovementBean.periodMovementResume.totalExpense}">
+                                <f:convertNumber pattern="¤#,##0.00" currencySymbol="R$ "/>
+                            </h:outputText>
+                        </h3>
+                        <p>#{messages['period-movement.list.total-expense']}</p>
+                    </div>
+                    <div class="icon">
+                        <i class="fa fa-file-invoice-dollar"/>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="box box-#{profileBean.currentThemeColorName}" style="margin-bottom: 10px;">
+            <div class="box-header with-border">
+                <h:form id="controlsForm">
+                    <p:defaultCommand target="btSearch"/>
+                    <div class="row">
+                        <div class="col-xs-3 form-group">
+                            <p:selectOneMenu converter="omnifaces.GenericEnumConverter"
+                                             value="#{periodMovementBean.filter.periodMovementType}">
+                                <f:selectItem value="#{null}"
+                                              itemLabel="#{menu['select-one.all']}"/>
+                                <f:selectItems var="movementType"
+                                               itemValue="#{movementType}"
+                                               itemLabel="#{enums[movementType]}"
+                                               value="#{periodMovementBean.filter.movementTypes}"/>
+                            </p:selectOneMenu>
+                        </div>
+                        <div class="col-xs-3 form-group">
+                            <p:selectOneMenu converter="omnifaces.GenericEnumConverter"
+                                             value="#{periodMovementBean.filter.periodMovementState}">
+                                <f:selectItem value="#{null}"
+                                              itemLabel="#{menu['select-one.all']}"/>
+                                <f:selectItems var="periodMovementState"
+                                               itemValue="#{periodMovementState}"
+                                               itemLabel="#{enums[periodMovementState]}"
+                                               value="#{periodMovementBean.filter.periodMovementStates}"/>
+                            </p:selectOneMenu>
+                        </div>
+                        <div class="col-xs-6 form-group">
+                            <p:autoComplete id="inFinancialPeriod"
+                                            multiple="true"
+                                            queryDelay="600"
+                                            var="financialPeriod"
+                                            itemValue="#{financialPeriod}"
+                                            itemLabel="#{financialPeriod.identification}"
+                                            value="#{periodMovementBean.filter.selectedFinancialPeriods}"
+                                            completeMethod="#{periodMovementBean.completeFinancialPeriod}">
+                                <o:converter converterId="omnifaces.ListConverter"
+                                             list="#{periodMovementBean.financialPeriods}"/>
+                                <p:column>
+                                    #{financialPeriod.identification}
+                                </p:column>
+                            </p:autoComplete>
+                        </div>
+                        <div class="col-xs-3">
+                            <p:selectOneMenu id="inCostCenter"
+                                             converter="omnifaces.SelectItemsConverter"
+                                             value="#{periodMovementBean.filter.costCenter}">
+
+                                <p:ajax event="change"
+                                        update="inMovementClass"
+                                        listener="#{periodMovementBean.onCostCenterSelectedAtListing()}"/>
+
+                                <f:selectItem itemValue="#{null}"
+                                              noSelectionOption="true"
+                                              itemLabel="#{menu['select-one']}"/>
+                                <f:selectItems var="costCenter"
+                                               itemValue="#{costCenter}"
+                                               itemLabel="#{costCenter.name}"
+                                               value="#{periodMovementBean.costCenters}"/>
+                            </p:selectOneMenu>
+                        </div>
+                        <div class="col-xs-3">
+                            <p:selectOneMenu id="inMovementClass"
+                                             converter="omnifaces.SelectItemsConverter"
+                                             value="#{periodMovementBean.filter.movementClass}">
+                                <f:selectItem itemValue="#{null}"
+                                              noSelectionOption="true"
+                                              itemLabel="#{menu['select-one']}"/>
+                                <f:selectItems var="movementClass"
+                                               itemValue="#{movementClass}"
+                                               itemLabel="#{movementClass.name}"
+                                               value="#{periodMovementBean.movementClasses}"/>
+                            </p:selectOneMenu>
+                        </div>
+                        <div class="col-xs-4">
+                            <div class="input-group">
+                                <p:inputText styleClass="form-control"
+                                             value="#{periodMovementBean.filter.value}"
+                                             placeholder="#{messages['filter.period-movement']}"/>
+                                <div class="input-group-btn">
+                                    <p:commandButton id="btSearch"
+                                                     value="#{menu['search']}"
+                                                     onstart="PF('blocker').show()"
+                                                     styleClass="btn btn-flat btn-primary"
+                                                     update="periodMovementGrid controlsForm"
+                                                     oncomplete="PF('blocker').hide(); updateResume();"/>
+                                    <p:spacer width="5"/>
+                                    <p:commandButton icon="fa fa-trash"
+                                                     onstart="PF('blocker').show()"
+                                                     title="#{menu['filter-clear']}"
+                                                     styleClass="btn btn-flat btn-danger"
+                                                     update="periodMovementGrid controlsForm"
+                                                     oncomplete="PF('blocker').hide(); updateResume();"
+                                                     actionListener="#{periodMovementBean.clearFilters()}"/>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-xs-2">
+                            <div class="box-tools pull-right">
+                                <p:commandButton immediate="true"
+                                                 value="#{menu['new']}"
+                                                 styleClass="btn btn-flat btn-primary"
+                                                 action="#{periodMovementBean.changeToAdd()}"
+                                                 rendered="#{userSessionBean.isPermitted(permissions.PERIOD_MOVEMENT_ADD)}"/>
+                            </div>
+                        </div>
+                    </div>
+                </h:form>
+            </div>
+        </div>
+        <div jsf:id="gridBox">
+            <p:dataGrid id="periodMovementGrid"
+                        rows="25"
+                        lazy="true"
+                        columns="1"
+                        paginator="true"
+                        var="periodMovement"
+                        paginatorPosition="bottom"
+                        rowKey="#{periodMovement.id}"
+                        paginatorAlwaysVisible="false"
+                        value="#{periodMovementBean.dataModel}"
+                        emptyMessage="#{messages['list.empty']}">
+
+                <div class="box box-widget period-movement-widget #{periodMovement.revenue ? 'period-movement-revenue' : 'period-movement-expense'}">
+                    <div class="box-header with-border fix-badge">
+                    <span class="badge bg-teal">
+                        #{periodMovement.financialPeriod.identification}
+                    </span>
+                        <p:spacer width="5"/>
+                        <h3 class="box-title">
+                            <p:link outcome="detailPeriodMovement.xhtml"
+                                    value="#{periodMovement.identification}">
+                                <f:param name="viewState" value="DETAILING"/>
+                                <f:param name="id" value="#{periodMovement.id}"/>
+                            </p:link>
+                        </h3>
+                        <div class="pull-right">
+                        <span class="badge bg-yellow"
+                              jsf:rendered="#{periodMovement.open}">
+                            #{enums[periodMovement.periodMovementState]}
+                        </span>
+                            <span class="badge bg-green"
+                                  jsf:rendered="#{periodMovement.accounted}">
+                            #{enums[periodMovement.periodMovementState]}
+                        </span>
+                            <span class="badge bg-aqua"
+                                  jsf:rendered="#{periodMovement.paid}">
+                            #{enums[periodMovement.periodMovementState]}
+                        </span>
+                            <p:spacer width="5"
+                                      rendered="#{periodMovement.paid or periodMovement.accounted}"/>
+                            <span class="badge bg-maroon"
+                                  jsf:rendered="#{periodMovement.paidWithCreditCard}">
+                            #{messages['period-movement.list.paid-credit-card']}
+                        </span>
+                            <span class="badge bg-teal"
+                                  jsf:rendered="#{periodMovement.paidWithDebitCard}">
+                            #{messages['period-movement.list.paid-debit-card']}
+                        </span>
+                            <span class="badge bg-blue"
+                                  jsf:rendered="#{periodMovement.paidWithCash}">
+                            #{messages['period-movement.list.paid-cash']}
+                        </span>
+                        </div>
+                    </div>
+                    <div class="box-body row">
+                        <div class="col-md-3">
+                            <label>#{messages['period-movement.list.contact']}:</label>
+                            <br/>
+                            <h:outputText value="#{periodMovement.contactName}"
+                                          rendered="#{not empty periodMovement.contactName}"/>
+                            <h:outputText rendered="#{empty periodMovement.contactName}"
+                                          value="#{messages['period-movement.list.no-contact']}"/>
+                        </div>
+                        <div class="col-md-3">
+                            <label>#{messages['period-movement.list.due-date']}:</label>
+                            <br/>
+                            <h:outputText value="#{periodMovement.dueDate}">
+                                <f:converter converterId="localDateConverter"/>
+                            </h:outputText>
+                        </div>
+                        <div class="col-md-3">
+                            <label>#{messages['period-movement.list.value']}:</label>
+                            <br/>
+                            <h:outputText value="#{periodMovement.valueWithDiscount}">
+                                <f:convertNumber pattern="¤#,##0.00" currencySymbol="R$ "/>
+                            </h:outputText>
+                            <p:spacer width="5"/>
+                            <h:outputText value="(D)"
+                                          styleClass="text-bold text-red"
+                                          rendered="#{periodMovement.discountPresent}"/>
+                        </div>
+                        <div class="col-md-3 text-right" style="padding-top: 10px">
+                            <p:commandButton title="#{menu['pay']}"
+                                             icon="fa fa-hand-holding-usd"
+                                             styleClass="btn btn-flat btn-success"
+                                             action="#{periodMovementBean.changeToPay(periodMovement.id)}"
+                                             rendered="#{periodMovement.open and userSessionBean.isPermitted(permissions.PERIOD_MOVEMENT_PAY)}"/>
+                            <p:spacer width="5"
+                                      rendered="#{periodMovement.open and userSessionBean.isPermitted(permissions.PERIOD_MOVEMENT_PAY)}"/>
+                            <p:commandButton icon="fa fa-info"
+                                             title="#{menu['detail']}"
+                                             styleClass="btn btn-flat btn-default"
+                                             action="#{periodMovementBean.changeToDetail(periodMovement.id)}"
+                                             rendered="#{userSessionBean.isPermitted(permissions.PERIOD_MOVEMENT_DETAIL)}"/>
+                            <p:spacer width="5"
+                                      rendered="#{userSessionBean.isPermitted(permissions.PERIOD_MOVEMENT_DETAIL)}"/>
+                            <p:commandButton icon="fa fa-edit"
+                                             title="#{menu['edit']}"
+                                             styleClass="btn btn-flat btn-default"
+                                             action="#{periodMovementBean.changeToEdit(periodMovement.id)}"
+                                             rendered="#{userSessionBean.isPermitted(permissions.PERIOD_MOVEMENT_UPDATE)}"/>
+                            <p:spacer width="5"
+                                      rendered="#{not periodMovement.accounted and userSessionBean.isPermitted(permissions.PERIOD_MOVEMENT_UPDATE)}"/>
+                            <p:commandButton icon="fa fa-eraser"
+                                             title="#{menu['delete']}"
+                                             styleClass="btn btn-flat btn-danger"
+                                             action="#{periodMovementBean.changeToDelete(periodMovement.id)}"
+                                             rendered="#{userSessionBean.isPermitted(permissions.PERIOD_MOVEMENT_DELETE)}"/>
+                        </div>
+                    </div>
+                </div>
+            </p:dataGrid>
+        </div>
+        <wb:blocker target="gridBox"/>
+        <h:form>
+            <p:remoteCommand autoRun="true"
+                             update="resumeBox"
+                             name="updateResume"
+                             process="@this controlsForm"
+                             actionListener="#{periodMovementBean.loadResume()}"/>
+        </h:form>
+    </ui:define>
+</ui:composition>

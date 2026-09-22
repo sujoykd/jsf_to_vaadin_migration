@@ -1,0 +1,163 @@
+<!--
+  Copyright (C) 2014 Arthur Gregorio, AG.Software
+ 
+  This program is free software: you can redistribute it and/or modify
+  it under the terms of the GNU General Public License as published by
+  the Free Software Foundation, either version 3 of the License, or
+  (at your option) any later version.
+ 
+  This program is distributed in the hope that it will be useful,
+  but WITHOUT ANY WARRANTY; without even the implied warranty of
+  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  GNU General Public License for more details.
+ 
+  You should have received a copy of the GNU General Public License
+  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+-->
+
+<ui:composition xmlns="http://www.w3.org/1999/xhtml"
+                xmlns:o="http://omnifaces.org/ui"
+                xmlns:p="http://primefaces.org/ui"
+                xmlns:h="http://xmlns.jcp.org/jsf/html"
+                xmlns:f="http://xmlns.jcp.org/jsf/core"
+                xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+                xmlns:wb="http://xmlns.jcp.org/jsf/composite/webbudget/ui"
+                template="/template/mainTemplate.xhtml">
+
+    <f:metadata>
+        <f:viewAction action="#{paymentBean.initialize(param.id, param.viewState)}"/>
+    </f:metadata>
+
+    <ui:define name="pageTitle">
+        #{messages['payment.page-title']}
+    </ui:define>
+
+    <ui:define name="pageDescription">
+        <o:outputFormat id="pageDescription"
+                        value="#{messages['payment.page-description']}">
+            <f:param value="#{paymentBean.periodMovement.identification}"/>
+        </o:outputFormat>
+    </ui:define>
+
+    <ui:define name="breadcrumb">
+        <li><a href="#">#{breadcrumb['financial']}</a></li>
+        <li><a href="#">#{breadcrumb['financial.movements']}</a></li>
+        <li><a href="listPeriodMovements.xhtml">#{breadcrumb['financial.movements.period']}</a></li>
+        <li class="active"><a href="#">#{breadcrumb['financial.movements.period.payment']}</a></li>
+    </ui:define>
+
+    <ui:define name="content">
+        <h:form id="paymentForm" prependId="false">
+            <div class="row">
+                <div class="col-sm-12">
+                    <p:messages id="messages" closable="true"/>
+                </div>
+            </div>
+            <div class="box box-#{profileBean.currentThemeColorName}">
+                <div class="box-body row">
+                    <div class="col-sm-6">
+                        <div class="row">
+                            <div class="col-sm-12 form-group">
+                                <h4>#{messages['payment.form.movement-details']}</h4>
+                            </div>
+                            <div class="col-sm-3 form-group">
+                                <p:outputLabel value="#{messages['movement.form.launch-period']}: "/>
+                                <br/>
+                                #{paymentBean.periodMovement.financialPeriod.identification}
+                            </div>
+                            <div class="col-sm-3 form-group">
+                                <p:outputLabel value="#{messages['movement.form.value']}: "/>
+                                <br/>
+                                <h:outputText value="#{paymentBean.periodMovement.value}">
+                                    <f:convertNumber pattern="¤#,##0.00" currencySymbol="R$ "/>
+                                </h:outputText>
+                            </div>
+                            <div class="col-sm-3 form-group">
+                                <p:outputLabel value="#{messages['movement.form.due-date']}: "/>
+                                <br/>
+                                <h:outputText converter="localDateConverter"
+                                              value="#{paymentBean.periodMovement.dueDate}"/>
+                            </div>
+                            <div class="col-sm-3 form-group">
+                                <p:outputLabel value="#{messages['movement.form.type']}: "/>
+                                <br/>
+                                #{enums[paymentBean.periodMovement.periodMovementType]}
+                            </div>
+                            <div class="col-sm-6 form-group">
+                                <p:outputLabel value="#{messages['movement.form.identification']}: "/>
+                                <br/>
+                                #{paymentBean.periodMovement.identification}
+                            </div>
+                            <div class="col-sm-6 form-group">
+                                <p:outputLabel value="#{messages['movement.form.contact']}: "/>
+                                <br/>
+                                <h:outputText value="#{empty paymentBean.periodMovement.contactName
+                                                       ? messages['no-data']
+                                                       : paymentBean.periodMovement.contactName}"/>
+                            </div>
+                            <div class="col-sm-12 form-group">
+                                <p:outputLabel value="#{messages['movement.form.description']}: "/>
+                                <br/>
+                                <h:outputText value="#{empty paymentBean.periodMovement.description
+                                                       ? messages['no-data']
+                                                       : paymentBean.periodMovement.description}"/>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-sm-6">
+                        <div class="row">
+                            <div class="col-sm-12 form-group">
+                                <h4>#{messages['payment.form.payment-details']}</h4>
+                            </div>
+                            <div class="col-sm-12 form-group">
+                                <wb:paymentBox id="paymentBox"
+                                               managedBean="#{paymentBean}"
+                                               value="#{paymentBean.payment}"
+                                               walletList="#{paymentBean.wallets}"
+                                               debitCardList="#{paymentBean.debitCards}"
+                                               creditCardList="#{paymentBean.creditCards}"
+                                               paymentMethods="#{paymentBean.paymentMethods}"
+                                               onlyOnCash="#{paymentBean.periodMovement.creditCardInvoice or paymentBean.periodMovement.revenue}"/>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="box-footer text-right">
+                    <ui:fragment rendered="#{paymentBean.viewState.adding}">
+                        <p:commandButton update="paymentForm"
+                                         value="#{menu['pay']}"
+                                         onstart="PF('blocker').show()"
+                                         oncomplete="PF('blocker').hide()"
+                                         styleClass="btn btn-flat btn-success"
+                                         action="#{paymentBean.doPaymentAndNew()}"/>
+                        <p:spacer width="5"/>
+                        <p:commandButton update="paymentForm"
+                                         onstart="PF('blocker').show()"
+                                         oncomplete="PF('blocker').hide()"
+                                         value="#{menu['pay-and-go-back']}"
+                                         styleClass="btn btn-flat btn-warning"
+                                         actionListener="#{paymentBean.doPayment()}"/>
+                        <p:spacer width="5"/>
+                    </ui:fragment>
+                    <ui:fragment rendered="#{paymentBean.viewState.editing}">
+                        <p:commandButton update="paymentForm"
+                                         value="#{menu['pay']}"
+                                         onstart="PF('blocker').show()"
+                                         oncomplete="PF('blocker').hide()"
+                                         action="#{paymentBean.doPayment()}"
+                                         styleClass="btn btn-flat btn-success"/>
+                        <p:spacer width="5"/>
+                    </ui:fragment>
+                    <p:commandButton immediate="true"
+                                     value="#{menu['back']}"
+                                     styleClass="btn btn-flat btn-primary"
+                                     action="#{paymentBean.changeToListing()}"/>
+                </div>
+            </div>
+            <wb:blocker target="paymentForm"/>
+        </h:form>
+    </ui:define>
+    <ui:define name="popups">
+        <ui:include src="dialogPaymentConfirmation.xhtml"/>
+    </ui:define>
+</ui:composition>

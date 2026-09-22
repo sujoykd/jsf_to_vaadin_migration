@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!--
+    Copyright (C) 2016 Arthur Gregorio, AG.Software
+
+    This program is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with this program.  If not, see <http://www.gnu.org/licenses/>.
+-->
+
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:c="http://xmlns.jcp.org/jsf/composite">
+
+    <c:interface>
+
+    </c:interface>
+
+    <c:implementation>
+
+        <style type="text/css">
+            .back-to-top {
+                cursor: pointer;
+                position: fixed;
+                bottom: 20px;
+                right: 20px;
+                display:none;
+            }
+        </style>
+
+        <script type="text/javascript">
+            $(document).ready(function () {
+
+                let button = $('#back-to-top');
+
+                $(window).scroll(function () {
+                    if ($(this).scrollTop() > 50) {
+                        button.fadeIn();
+                    } else {
+                        button.fadeOut();
+                    }
+                });
+                // scroll body to 0px on click
+                button.click(function () {
+                    button.tooltip('hide');
+                    $('body,html').animate({
+                        scrollTop: 0
+                    }, 800);
+                    return false;
+                });
+                button.tooltip('show');
+            });
+        </script>
+
+        <a id="back-to-top"
+           href="#"
+           role="button"
+           data-toggle="tooltip"
+           data-placement="left"
+           title="#{menu['back-to-top']}"
+           class="btn btn-primary btn-lg back-to-top">
+            <span class="fa fa-chevron-up"/>
+        </a>
+    </c:implementation>
+</html>

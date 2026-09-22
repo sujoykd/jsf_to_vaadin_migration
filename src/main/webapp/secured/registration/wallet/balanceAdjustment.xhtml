@@ -1,0 +1,112 @@
+<!--
+  Copyright (C) 2015 Arthur Gregorio, AG.Software
+ 
+  This program is free software: you can redistribute it and/or modify
+  it under the terms of the GNU General Public License as published by
+  the Free Software Foundation, either version 3 of the License, or
+  (at your option) any later version.
+ 
+  This program is distributed in the hope that it will be useful,
+  but WITHOUT ANY WARRANTY; without even the implied warranty of
+  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  GNU General Public License for more details.
+ 
+  You should have received a copy of the GNU General Public License
+  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+-->
+
+<ui:composition xmlns="http://www.w3.org/1999/xhtml"
+                xmlns:o="http://omnifaces.org/ui"
+                xmlns:p="http://primefaces.org/ui"
+                xmlns:h="http://xmlns.jcp.org/jsf/html"
+                xmlns:f="http://xmlns.jcp.org/jsf/core"
+                xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+                template="/template/mainTemplate.xhtml">
+
+    <f:metadata>
+        <f:viewAction action="#{balanceAdjustmentBean.initialize(param.id)}"/>
+    </f:metadata>
+
+    <ui:define name="pageTitle">
+        #{messages['balance-adjustment.page-title']}
+    </ui:define>
+
+    <ui:define name="pageDescription">
+        <o:outputFormat value="#{messages['balance-adjustment.page-description']}">
+            <f:param value="#{balanceAdjustmentBean.wallet.fullName}"/>
+        </o:outputFormat>
+    </ui:define>
+
+    <ui:define name="breadcrumb">
+        <li><a href="#">#{breadcrumb['registration']}</a></li>
+        <li><a href="listWallets.xhtml">#{breadcrumb['registration.wallets']}</a></li>
+        <li class="active"><a href="#">#{breadcrumb['registration.wallets.balance-adjustment']}</a></li>
+    </ui:define>
+
+    <ui:define name="content">
+        <h:form id="adjustmentForm" prependId="false">
+            <div class="row">
+                <div class="col-sm-12">
+                    <p:messages id="messages" closable="true">
+                        <p:autoUpdate/>
+                    </p:messages>
+                </div>
+            </div>
+            <div class="box box-#{profileBean.currentThemeColorName}">
+                <div class="box-body row">
+                    <div class="col-md-6">
+                        <div class="row">
+                            <div class="form-group col-md-12">
+                                <p:outputLabel for="inActualBalance"
+                                               value="#{messages['balance-adjustment.form.actual-balance']}: "/>
+                                <p:inputText id="inActualBalance"
+                                             readonly="true"
+                                             styleClass="form-control"
+                                             value="R$ #{balanceAdjustmentBean.wallet.actualBalance}"
+                                             style="#{balanceAdjustmentBean.wallet.balanceNegative ? 'color: red;' : 'color: green'}"/>
+                            </div>
+                            <div class="form-group col-md-12">
+                                <p:outputLabel for="inBalance"
+                                               value="#{messages['balance-adjustment.form.value']}: "/>
+                                <p:inputNumber id="inBalance"
+                                               symbol="R$ "
+                                               decimalPlaces="2"
+                                               decimalSeparator=","
+                                               thousandSeparator="."
+                                               minValue="-99999999.99"
+                                               value="#{balanceAdjustmentBean.adjustmentValue}">
+                                    <f:converter converterId="javax.faces.BigDecimal"/>
+                                    <p:keyFilter mask="num"/>
+                                </p:inputNumber>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="form-group col-md-6">
+                        <p:outputLabel for="inReason"
+                                       value="#{messages['balance-adjustment.form.reason']}:"/>
+                        <p:inputTextarea id="inReason"
+                                         maxlength="150"
+                                         autoResize="true"
+                                         rows="5"
+                                         styleClass="form-control"
+                                         value="#{balanceAdjustmentBean.adjustmentReason}"/>
+                    </div>
+                </div>
+
+                <div class="box-footer text-right">
+                    <p:commandButton value="#{menu['save']}"
+                                     styleClass="btn btn-flat btn-success"
+                                     action="#{balanceAdjustmentBean.doAdjustment()}"/>
+                    <p:spacer width="5"/>
+                    <p:commandButton immediate="true"
+                                     value="#{menu['back']}"
+                                     styleClass="btn btn-flat btn-primary"
+                                     action="#{balanceAdjustmentBean.changeToListing()}"/>
+                </div>
+            </div>
+        </h:form>
+    </ui:define>
+    <ui:define name="popups">
+        <ui:include src="dialogConfirmAdjustment.xhtml"/>
+    </ui:define>
+</ui:composition>

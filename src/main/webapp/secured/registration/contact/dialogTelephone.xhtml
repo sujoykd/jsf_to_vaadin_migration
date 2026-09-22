@@ -1,0 +1,85 @@
+<!--
+  Copyright (C) 2015 Arthur Gregorio, AG.Software
+ 
+  This program is free software: you can redistribute it and/or modify
+  it under the terms of the GNU General Public License as published by
+  the Free Software Foundation, either version 3 of the License, or
+  (at your option) any later version.
+ 
+  This program is distributed in the hope that it will be useful,
+  but WITHOUT ANY WARRANTY; without even the implied warranty of
+  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  GNU General Public License for more details.
+ 
+  You should have received a copy of the GNU General Public License
+  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+-->
+
+<p:dialog xmlns="http://www.w3.org/1999/xhtml"
+          xmlns:p="http://primefaces.org/ui"
+          xmlns:h="http://xmlns.jcp.org/jsf/html"
+          xmlns:f="http://xmlns.jcp.org/jsf/core"
+          id="telephoneDialog"
+          width="500"
+          modal="true"
+          closable="true"
+          resizable="false"
+          closeOnEscape="true"
+          widgetVar="dialogTelephone"
+          header="#{messages['telephone.dialog.title']}">
+
+    <h:form id="telephoneForm" prependId="false">
+
+        <p:focus context="inTelephone"/>
+        <p:defaultCommand target="btAdd"/>
+
+        <div class="row">
+            <div class="col-md-12">
+                <p:messages id="telephoneMessages" closable="true"/>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-md-12 form-group">
+                <p:outputLabel for="inNumberType"
+                               value="#{messages['telephone.form.type']}: "/>
+                <p:selectOneMenu id="inNumberType"
+                                 converter="omnifaces.GenericEnumConverter"
+                                 value="#{contactBean.telephone.numberType}">
+                    <f:selectItem itemValue="#{null}"
+                                  noSelectionOption="true"
+                                  itemLabel="#{menu['select-one']}"/>
+                    <f:selectItems var="numberType"
+                                   itemValue="#{numberType}"
+                                   itemLabel="#{enums[numberType]}"
+                                   value="#{contactBean.numberTypes}"/>
+                </p:selectOneMenu>
+            </div>
+            <div class="col-md-12 form-group">
+                <p:outputLabel for="inTelephone"
+                               value="#{messages['telephone.form.number']}: "/>
+                <p:inputMask id="inTelephone"
+                             mask="(99) 9999-9999?9"
+                             styleClass="form-control"
+                             value="#{contactBean.telephone.number}"/>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-md-12 text-right dialog-controls-box">
+                <p:commandButton id="btAdd"
+                                 value="#{menu['add']}"
+                                 update="telephoneForm"
+                                 process="telephoneForm"
+                                 styleClass="btn btn-flat btn-success"
+                                 actionListener="#{contactBean.addTelephone()}"/>
+                <p:spacer width="5"/>
+                <p:commandButton immediate="true"
+                                 value="#{menu['cancel']}"
+                                 styleClass="btn btn-flat btn-primary"
+                                 onclick="PF('dialogTelephone').hide()"/>
+
+            </div>
+        </div>
+    </h:form>
+</p:dialog>

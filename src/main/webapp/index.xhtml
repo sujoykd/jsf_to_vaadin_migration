@@ -1,0 +1,108 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!--
+  Copyright (C) 2015 Arthur Gregorio, AG.Software
+
+  This program is free software: you can redistribute it and/or modify
+  it under the terms of the GNU General Public License as published by
+  the Free Software Foundation, either version 3 of the License, or
+  (at your option) any later version.
+
+  This program is distributed in the hope that it will be useful,
+  but WITHOUT ANY WARRANTY; without even the implied warranty of
+  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  GNU General Public License for more details.
+
+  You should have received a copy of the GNU General Public License
+  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+-->
+
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:f="http://xmlns.jcp.org/jsf/core"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+      xmlns:pt="http://xmlns.jcp.org/jsf/passthrough">
+
+    <h:head>
+        <title>webBudget</title>
+
+        <meta charset="utf-8"/>
+        <meta http-equiv="X-UA-Compatible" content="IE=edge"/>
+        <meta name="mobile-web-app-capable" content="yes"/>
+        <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no"/>
+
+        <link rel="shortcut icon" type="image/x-icon" href="#{resource['webbudget:images/favicon.ico']}"/>
+
+        <h:outputStylesheet library="bootstrap" name="css/bootstrap.min.css"/>
+        <h:outputStylesheet library="adminlte" name="css/adminlte.min.css"/>
+        <h:outputStylesheet library="pace" name="css/theme.css"/>
+        <h:outputStylesheet library="webbudget" name="css/pf-custom.css"/>
+        <h:outputStylesheet library="webbudget" name="css/lte-custom.css"/>
+        <h:outputStylesheet library="webbudget" name="css/common.css"/>
+
+        <h:outputStylesheet library="webjars" name="font-awesome/5.10.1/css/solid-jsf.css"/>
+        <h:outputStylesheet library="webjars" name="font-awesome/5.10.1/css/fontawesome-jsf.css"/>
+    </h:head>
+
+    <h:body styleClass="hold-transition login-page">
+
+        <f:metadata>
+            <f:viewAction action="#{authenticationBean.initialize()}"/>
+        </f:metadata>
+
+        <div class="login-box">
+            <div class="login-logo wb-font">
+                <a href="index.xhtml" style="font-size: 75px;">
+                    <span class="wb-logo-prefix">web</span><span class="wb-logo-sufix">Budget</span>
+                </a>
+            </div>
+            <div class="login-box-body">
+                <p class="login-box-msg">#{messages['login.welcome']}</p>
+                <h:form id="loginForm" prependId="false">
+                    <p:messages id="messages" closable="true">
+                        <p:autoUpdate/>
+                    </p:messages>
+                    <div class="form-group has-feedback">
+                        <p:inputText pt:autocorrect="off"
+                                     pt:spellcheck="false"
+                                     pt:autocomplete="off"
+                                     pt:autocapitalize="off"
+                                     styleClass="form-control"
+                                     placeholder="#{messages['login.username']}"
+                                     value="#{authenticationBean.credential.username}"/>
+                        <span class="fa fa-user form-control-feedback"/>
+                    </div>
+                    <div class="form-group has-feedback">
+                        <p:password pt:autocorrect="off"
+                                    pt:spellcheck="false"
+                                    styleClass="form-control"
+                                    placeholder="#{messages['login.password']}"
+                                    value="#{authenticationBean.credential.password}"/>
+                        <span class="fa fa-key form-control-feedback"/>
+                    </div>
+                    <div class="row">
+                        <div class="col-xs-8" style="padding-top: 10px;">
+                            <p:commandLink process="@this"
+                                           value="#{messages['login.recover-password']}"
+                                           actionListener="#{recoverPasswordBean.showRecoverPassDialog()}"/>
+                        </div>
+                        <div class="col-xs-4">
+                            <p:commandButton update="loginForm"
+                                             value="#{menu['login']}"
+                                             class="btn btn-primary btn-block btn-flat"
+                                             action="#{authenticationBean.doLogin()}"/>
+                        </div>
+                    </div>
+                </h:form>
+            </div>
+        </div>
+
+        <ui:include src="dialogRecoverPassword.xhtml"/>
+
+        <h:outputScript library="bootstrap" name="js/bootstrap.min.js" target="head"/>
+        <h:outputScript library="pace" name="js/pace.min.js" target="head"/>
+        <h:outputScript library="adminlte" name="js/adminlte.min.js" target="head"/>
+    </h:body>
+</html>
